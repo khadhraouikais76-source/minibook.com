@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniBook - صفحتي</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="center-container">
+    <h1>صفحتي الشخصية</h1>
+    <div id="user-info" class="card">
+      <h2 id="username"></h2>
+      <img id="avatar" src="" alt="" style="max-width:100px; border-radius:50%;">
+    </div>
+
+    <div class="card">
+      <h3>نشر منشور جديد</h3>
+      <textarea id="post-content" placeholder="ماذا تفكر؟" style="width:100%;padding:10px;"></textarea>
+      <input type="text" id="post-image" placeholder="رابط الصورة (اختياري)">
+      <button onclick="createPost()">نشر</button>
+    </div>
+
+    <h2>منشوراتي</h2>
+    <div id="posts"></div>
+
+    <button onclick="logout()">تسجيل خروج</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/supabase.min.js"></script>
+  <script src="profile.js"></script>
+</body>
+</html>
