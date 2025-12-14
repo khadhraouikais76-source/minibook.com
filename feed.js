@@ -1,5 +1,5 @@
-const supabaseUrl = 'https://xacucaoofkkgaxbbakei.supabase.co';
-const supabaseKey = 'process.env.SUPABASE_KEY'; 
+const supabaseUrl = 'https://xacucaoofkkgaxbbakei.supabase.co;
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhY3VjYW9vZmtrZ2F4YmJha2VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU3MjI4NjIsImV4cCI6MjA4MTI5ODg2Mn0.pTLSQcjCeEwFCFoOdnyKyPEaf9rpliZwSzLbf4hBuzg'; 
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 let userId = localStorage.getItem('userId');
