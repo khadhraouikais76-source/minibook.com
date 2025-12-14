@@ -2,13 +2,13 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>اختبار اتصال Firebase</title>
+<title>اختبار اتصال Firebase نعم/لا</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body { font-family: Arial; background:#f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; }
 .box { background:white; padding:20px; width:320px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2); text-align:center; }
-.success { color:green; }
-.error { color:red; white-space: pre-wrap; }
+.success { color:green; font-size:20px; }
+.error { color:red; font-size:20px; }
 </style>
 </head>
 <body>
@@ -21,41 +21,57 @@ body { font-family: Arial; background:#f0f2f5; display:flex; justify-content:cen
 <script src="https://www.gstatic.com/firebasejs/8.16.0/firebase-database.js"></script>
 
 <script>
-  // إعداد Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",
-    authDomain: "book-ee927.firebaseapp.com",
-    databaseURL: "https://book-ee927-default-rtdb.firebaseio.com",
-    projectId: "book-ee927",
-    storageBucket: "book-ee927.firebasestorage.app",
-    messagingSenderId: "523457475998",
-    appId: "1:523457475998:web:395114f92143b4f3d0128f",
-    measurementId: "G-9BY7W9WJYP"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",
+  authDomain: "book-ee927.firebaseapp.com",
+  databaseURL: "https://book-ee927-default-rtdb.firebaseio.com",
+  projectId: "book-ee927",
+  storageBucket: "book-ee927.firebasestorage.app",
+  messagingSenderId: "523457475998",
+  appId: "1:523457475998:web:395114f92143b4f3d0128f",
+  measurementId: "G-9BY7W9WJYP"
+};
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const status = document.getElementById("status");
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const status = document.getElementById("status");
 
-  // اختبار الاتصال بكتابة وقراءة قيمة مؤقتة
-  const testRef = db.ref("test_connection");
+let responded = false;
 
-  testRef.set({ ts: Date.now() })
-    .then(() => testRef.once("value"))
-    .then(snapshot => {
-      const val = snapshot.val();
-      if(val && val.ts) {
-        status.textContent = "✅ الاتصال بالقاعدة ناجح! Timestamp: " + val.ts;
-        status.className = "success";
-      } else {
-        status.textContent = "❌ لم نتمكن من قراءة البيانات بعد الكتابة";
-        status.className = "error";
-      }
-    })
-    .catch(error => {
-      status.textContent = "❌ فشل الاتصال بالقاعدة\nCODE: " + error.code + "\nMESSAGE: " + error.message;
-      status.className = "error";
-    });
+// مسار اختبار
+const testRef = db.ref("test_connection_flag");
+
+// إنشاء مهلة للتأكد من عدم تعليق الصفحة
+const timeout = setTimeout(() => {
+  if(!responded){
+    status.textContent = "❌ لا";
+    status.className = "error";
+    responded = true;
+  }
+}, 2000); // 2 ثواني
+
+// كتابة وقراءة
+testRef.set({ ping: true })
+.then(() => testRef.once("value"))
+.then(snapshot => {
+  if(responded) return;
+  const val = snapshot.val();
+  if(val && val.ping){
+    status.textContent = "✅ نعم";
+    status.className = "success";
+  } else {
+    status.textContent = "❌ لا";
+    status.className = "error";
+  }
+  responded = true;
+})
+.catch(() => {
+  if(!responded){
+    status.textContent = "❌ لا";
+    status.className = "error";
+    responded = true;
+  }
+});
 </script>
 </body>
 </html>
