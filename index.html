@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Facebook Full</title>
+<style>
+  body { font-family: Arial, sans-serif; background:#f0f2f5; margin:0; padding:0; }
+  header { background:#4267B2; color:white; padding:10px; text-align:center; font-size:24px; }
+  main { padding:20px; max-width:600px; margin:auto; }
+  input, button, textarea { width:100%; padding:10px; margin:5px 0; border-radius:5px; border:1px solid #ccc; }
+  button { background:#4267B2; color:white; border:none; cursor:pointer; }
+  button:hover { background:#365899; }
+  .post { background:white; padding:10px; margin:10px 0; border-radius:8px; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+  .post img { max-width:100%; border-radius:5px; margin-top:5px; }
+  .username { font-weight:bold; color:#4267B2; display:flex; align-items:center; gap:10px; }
+  .avatar { width:30px; height:30px; border-radius:50%; object-fit:cover; }
+  .comments { margin-top:10px; padding-left:20px; border-left:2px solid #eee; }
+  .comment { margin-bottom:5px; }
+  .profile { text-align:center; margin-bottom:20px; }
+  .profile img { width:80px; height:80px; border-radius:50%; object-fit:cover; cursor:pointer; }
+  .feed-title { margin-top:20px; font-size:18px; }
+  a { color:#4267B2; text-decoration:none; }
+</style>
+</head>
+<body>
+<header>Mini Facebook Full</header>
+<main>
+
+<div id="signupDiv">
+  <h2>إنشاء حساب</h2>
+  <input type="text" id="su_username" placeholder="اسم المستخدم" required>
+  <button onclick="signUp()">إنشاء حساب</button>
+</div>
+
+<div id="profileDiv" style="display:none;">
+  <div class="profile">
+    <img id="profileAvatar" src="https://via.placeholder.com/80" onclick="editAvatar()">
+    <h2 id="profileName"></h2>
+    <p id="profileBio" onclick="editBio()"></p>
+    <p><a href="#" onclick="showUserFeed(currentUser)">منشوراتي</a> | <a href="#" onclick="showFeed()">Feed عام</a></p>
+  </div>
+  <h3>أنشئ منشوراً</h3>
+  <textarea id="postContent" placeholder="اكتب شيئاً..."></textarea>
+  <input type="text" id="postImage" placeholder="رابط الصورة (اختياري)">
+  <button onclick="createPost()">نشر</button>
+
+  <h3 id="feedTitle" class="feed-title">المنشورات</h3>
+  <div id="feed"></div>
+  <button onclick="logout()">تسجيل الخروج</button>
+</div>
+
+<script src="https://unpkg.com/parse/dist/parse.min.js"></script>
+<script>
+Parse.initialize("ud7pjwTspM89k8GtFzMi4eppYn62HqXqNKQsbHsd"); // App ID
+Parse.serverURL = "https://parseapi.back4app.com";
+
+let currentUser = null;
+let showUserOnly = false;
+
+// إنشاء جداول Posts و Comments تلقائياً
+async function ensurePostsTable() {
+  const schema = new Parse.Schema('Posts');
+  try { await schema.get(); } catch(e) {
+    await schema.save();
+    await schema.addPointer('user', '_User');
+    await schema.addString('content');
+    await schema.addString('image_url');
+    await schema.addNumber('likes');
+  }
+}
+
+async function ensureCommentsTable() {
+  const schema = new Parse.Schema('Comments');
+  try { await schema.get(); } catch(e) {
+    await schema.save();
+    await schema.addPointer('user', '_User');
+    await schema.addPointer('post', 'Posts');
+    await schema.addString('content');
+  }
+}
+
+// إضافة أعمدة مخصصة Users
+async function ensureUserColumns() {
+  const schema = new Parse.Schema('_User');
+  try {
+    await schema.get();
+    try { await schema.addString('avatar'); } catch(e){}
+    try { await schema.addString('bio'); } catch(e){}
+  } catch(e){ console.error("حدث خطأ مع Users:", e); }
+}
+
+// إنشاء حساب بالاسم فقط
+async function signUp(){
+  const username = document.getElementById('su_username').value.trim();
+  if(!username){ alert("الرجاء إدخال اسم المستخدم"); return; }
+
+  const query = new Parse.Query(Parse.User);
+  query.equalTo("username", username);
+  try {
+    const existing = await query.first();
+    if(existing){ alert("اسم المستخدم موجود بالفعل. اختر اسماً آخر."); return; }
+
+    const user = new Parse.User();
+    user.set("username", username);
+    // كلمة مرور وهمية لتجنب مشاكل Parse
+    user.set("password", "123456");
+    await user.signUp();
+    currentUser = user;
+    localStorage.setItem('user', user.id);
+    showProfile();
+  } catch(error){
+    console.error(error);
+    alert("خطأ عند إنشاء الحساب:\nرمز الخطأ: " + error.code + "\nالرسالة: " + error.message);
+  }
+}
+
+// تسجيل خروج
+function logout(){
+  Parse.User.logOut();
+  currentUser = null;
+  localStorage.removeItem('user');
+  document.getElementById('signupDiv').style.display='block';
+  document.getElementById('profileDiv').style.display='none';
+}
+
+// تعديل الصورة الشخصية
+async function editAvatar(){
+  const url = prompt("ضع رابط الصورة الشخصية:");
+  if(url){
+    currentUser.set("avatar", url);
+    await currentUser.save();
+    document.getElementById('profileAvatar').src = url;
+  }
+}
+
+// تعديل النبذة
+async function editBio(){
+  const bio = prompt("اكتب نبذة عنك:");
+  if(bio){
+    currentUser.set("bio", bio);
+    await currentUser.save();
+    document.getElementById('profileBio').innerText = bio;
+  }
+}
+
+// إنشاء منشور
+async function createPost(){
+  const content = document.getElementById('postContent').value;
+  const image_url = document.getElementById('postImage').value;
+  if(!currentUser){ alert("يجب تسجيل الدخول"); return; }
+
+  const Post = Parse.Object.extend("Posts");
+  const post = new Post();
+  post.set("user", currentUser);
+  post.set("content", content);
+  post.set("image_url", image_url);
+  post.set("likes", 0);
+  try {
+    await post.save();
+    document.getElementById('postContent').value='';
+    document.getElementById('postImage').value='';
+    if(showUserOnly) showUserFeed(currentUser); else showFeed();
+  } catch(error){ console.error(error); }
+}
+
+// عرض Feed عام
+async function showFeed(){
+  showUserOnly=false;
+  document.getElementById('feedTitle').innerText="المنشورات العامة";
+  const Post = Parse.Object.extend("Posts");
+  const query = new Parse.Query(Post);
+  query.descending("createdAt");
+  query.include("user");
+  try {
+    const results = await query.find();
+    renderPosts(results);
+  } catch(error){ console.error(error); }
+}
+
+// عرض منشورات المستخدم
+async function showUserFeed(user){
+  showUserOnly=true;
+  document.getElementById('feedTitle').innerText="منشوراتي";
+  const Post = Parse.Object.extend("Posts");
+  const query = new Parse.Query(Post);
+  query.equalTo("user", user);
+  query.descending("createdAt");
+  query.include("user");
+  try { const results = await query.find(); renderPosts(results); } 
+  catch(error){ console.error(error); }
+}
+
+// عرض المنشورات والتعليقات
+function renderPosts(posts){
+  const feedDiv = document.getElementById('feed');
+  feedDiv.innerHTML = '';
+  posts.forEach(post=>{
+    const user = post.get("user");
+    const username = user.get("username") || "مستخدم";
+    const avatar = user.get("avatar") || "https://via.placeholder.com/30";
+    const content = post.get("content");
+    const image_url = post.get("image_url");
+    const likes = post.get("likes") || 0;
+    const div = document.createElement('div');
+    div.className='post';
+    div.innerHTML=`
+      <span class="username"><img class="avatar" src="${avatar}">${username}</span>
+      <p>${content}</p>
+      ${image_url?`<img src="${image_url}">`:''}
+      <button onclick="likePost('${post.id}', this)">👍 Like ${likes}</button>
+      <div class="comments">
+        <input type="text" placeholder="اكتب تعليقاً..." onkeypress="if(event.key==='Enter'){addComment(event,'${post.id}')}">
+      </div>
+    `;
+    feedDiv.appendChild(div);
+  });
+}
+
+// لايك
+async function likePost(postId, btn){
+  const Post = Parse.Object.extend("Posts");
+  const query = new Parse.Query(Post);
+  try{
+    const post = await query.get(postId);
+    post.increment("likes");
+    await post.save();
+    if(showUserOnly) showUserFeed(currentUser); else showFeed();
+  } catch(error){ console.error(error); }
+}
+
+// إضافة تعليق
+async function addComment(e, postId){
+  const text=e.target.value.trim();
+  if(text==="") return;
+  const Comment = Parse.Object.extend("Comments");
+  const comment = new Comment();
+  comment.set("user", currentUser);
+  const Post = Parse.Object.extend("Posts");
+  const post = new Post();
+  post.id=postId;
+  comment.set("post", post);
+  comment.set("content", text);
+  try { await comment.save(); e.target.value=''; if(showUserOnly) showUserFeed(currentUser); else showFeed(); } 
+  catch(error){ console.error(error); }
+}
+
+// عند تحميل الصفحة
+window.onload=async()=>{
+  await ensureUserColumns();
+  await ensurePostsTable();
+  await ensureCommentsTable();
+  const user=Parse.User.current();
+  if(user){ currentUser=user; showProfile(); } 
+  else { document.getElementById('signupDiv').style.display='block'; }
+}
+</script>
+</body>
+</html>
