@@ -27,7 +27,6 @@
 <header>Mini Facebook Full</header>
 <main>
 
-<!-- صفحة تسجيل الحساب -->
 <div id="signupDiv">
   <h2>إنشاء حساب</h2>
   <input type="text" id="su_username" placeholder="اسم المستخدم" required>
@@ -38,7 +37,6 @@
   <p>لديك حساب؟ <a href="#" onclick="showLogin()">تسجيل الدخول</a></p>
 </div>
 
-<!-- صفحة تسجيل الدخول -->
 <div id="loginDiv" style="display:none;">
   <h2>تسجيل الدخول</h2>
   <input type="text" id="li_username" placeholder="اسم المستخدم" required>
@@ -47,15 +45,13 @@
   <p>ليس لديك حساب؟ <a href="#" onclick="showSignup()">إنشاء حساب</a></p>
 </div>
 
-<!-- صفحة المستخدم -->
 <div id="profileDiv" style="display:none;">
   <div class="profile">
     <img id="profileAvatar" src="https://via.placeholder.com/80">
     <h2 id="profileName"></h2>
     <p id="profileBio"></p>
-    <p><a href="#" onclick="showUserFeed(currentUser)">عرض منشوراتي</a> | <a href="#" onclick="showFeed()">Feed عام</a></p>
+    <p><a href="#" onclick="showUserFeed(currentUser)">منشوراتي</a> | <a href="#" onclick="showFeed()">Feed عام</a></p>
   </div>
-
   <h3>أنشئ منشوراً</h3>
   <textarea id="postContent" placeholder="اكتب شيئاً..."></textarea>
   <input type="text" id="postImage" placeholder="رابط الصورة (اختياري)">
@@ -68,7 +64,7 @@
 
 <script src="https://unpkg.com/parse/dist/parse.min.js"></script>
 <script>
-Parse.initialize("ud7pjwTspM89k8GtFzMi4eppYn62HqXqNKQsbHsd");
+Parse.initialize("ud7pjwTspM89k8GtFzMi4eppYn62HqXqNKQsbHsd"); // App ID
 Parse.serverURL = 'https://parseapi.back4app.com';
 
 let currentUser = null;
@@ -79,13 +75,11 @@ function showSignup(){
   document.getElementById('loginDiv').style.display='none';
   document.getElementById('profileDiv').style.display='none';
 }
-
 function showLogin(){
   document.getElementById('signupDiv').style.display='none';
   document.getElementById('loginDiv').style.display='block';
   document.getElementById('profileDiv').style.display='none';
 }
-
 function showProfile(){
   document.getElementById('signupDiv').style.display='none';
   document.getElementById('loginDiv').style.display='none';
@@ -96,30 +90,38 @@ function showProfile(){
   showFeed();
 }
 
-// إنشاء حساب
+// إنشاء حساب مع عرض سبب الخطأ بدقة
 async function signUp(){
-  const username = document.getElementById('su_username').value;
+  const username = document.getElementById('su_username').value.trim();
   const password = document.getElementById('su_password').value;
   const avatar = document.getElementById('su_avatar').value;
   const bio = document.getElementById('su_bio').value;
 
-  const user = new Parse.User();
-  user.set("username", username);
-  user.set("password", password);
-  user.set("avatar", avatar);
-  user.set("bio", bio);
-
+  const query = new Parse.Query(Parse.User);
+  query.equalTo("username", username);
   try {
+    const existing = await query.first();
+    if(existing){
+      alert("اسم المستخدم موجود بالفعل. اختر اسماً آخر.");
+      return;
+    }
+
+    const user = new Parse.User();
+    user.set("username", username);
+    user.set("password", password);
+    user.set("avatar", avatar);
+    user.set("bio", bio);
+
     await user.signUp();
     currentUser = user;
     localStorage.setItem('user', user.id);
     showProfile();
   } catch(error){
-    alert("خطأ: " + error.message);
+    console.error(error);
+    alert("خطأ عند إنشاء الحساب:\nرمز الخطأ: " + error.code + "\nالرسالة: " + error.message);
   }
 }
 
-// تسجيل دخول
 async function login(){
   const username = document.getElementById('li_username').value;
   const password = document.getElementById('li_password').value;
@@ -130,10 +132,9 @@ async function login(){
     localStorage.setItem('user', user.id);
     showProfile();
   } catch(error){
-    alert("اسم المستخدم أو كلمة المرور خاطئة");
+    alert("اسم المستخدم أو كلمة المرور خاطئة.\nالرسالة: " + error.message);
   }
 }
-
 function logout(){
   Parse.User.logOut();
   currentUser = null;
@@ -141,7 +142,6 @@ function logout(){
   showLogin();
 }
 
-// إنشاء منشور
 async function createPost(){
   const content = document.getElementById('postContent').value;
   const image_url = document.getElementById('postImage').value;
@@ -161,11 +161,11 @@ async function createPost(){
     document.getElementById('postImage').value='';
     if(showUserOnly) showUserFeed(currentUser); else showFeed();
   } catch(error){
-    alert("خطأ في إنشاء المنشور: " + error.message);
+    console.error(error);
+    alert("خطأ في إنشاء المنشور:\n" + error.message);
   }
 }
 
-// تحميل Feed عام
 async function showFeed(){
   showUserOnly = false;
   document.getElementById('feedTitle').innerText = "المنشورات العامة";
@@ -183,7 +183,6 @@ async function showFeed(){
   }
 }
 
-// عرض منشورات المستخدم فقط
 async function showUserFeed(user){
   showUserOnly = true;
   document.getElementById('feedTitle').innerText = "منشوراتي";
@@ -202,7 +201,6 @@ async function showUserFeed(user){
   }
 }
 
-// رسم المنشورات
 function renderPosts(posts){
   const feedDiv = document.getElementById('feed');
   feedDiv.innerHTML = '';
@@ -230,7 +228,6 @@ function renderPosts(posts){
   });
 }
 
-// لايك المنشور
 async function likePost(postId, btn){
   const Post = Parse.Object.extend("Posts");
   const query = new Parse.Query(Post);
@@ -244,7 +241,6 @@ async function likePost(postId, btn){
   }
 }
 
-// إضافة تعليق
 async function addComment(e, postId){
   const text = e.target.value.trim();
   if(text==="") return;
@@ -267,7 +263,6 @@ async function addComment(e, postId){
   }
 }
 
-// التحقق من الجلسة عند التحميل
 window.onload = async () => {
   const user = Parse.User.current();
   if(user){
