@@ -37,16 +37,25 @@ body { font-family: Arial; background:#f0f2f5; display:flex; justify-content:cen
   const db = firebase.database();
   const status = document.getElementById("status");
 
-  // محاولة قراءة بيانات عامة من الجذر
-  db.ref("/").once("value")
-  .then(snapshot => {
-    status.textContent = "✅ الاتصال بالقاعدة ناجح!";
-    status.className = "success";
-  })
-  .catch(error => {
-    status.textContent = "❌ فشل الاتصال بالقاعدة\nCODE: " + error.code + "\nMESSAGE: " + error.message;
-    status.className = "error";
-  });
+  // اختبار الاتصال بكتابة وقراءة قيمة مؤقتة
+  const testRef = db.ref("test_connection");
+
+  testRef.set({ ts: Date.now() })
+    .then(() => testRef.once("value"))
+    .then(snapshot => {
+      const val = snapshot.val();
+      if(val && val.ts) {
+        status.textContent = "✅ الاتصال بالقاعدة ناجح! Timestamp: " + val.ts;
+        status.className = "success";
+      } else {
+        status.textContent = "❌ لم نتمكن من قراءة البيانات بعد الكتابة";
+        status.className = "error";
+      }
+    })
+    .catch(error => {
+      status.textContent = "❌ فشل الاتصال بالقاعدة\nCODE: " + error.code + "\nMESSAGE: " + error.message;
+      status.className = "error";
+    });
 </script>
 </body>
 </html>
