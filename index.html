@@ -2,25 +2,40 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>اختبار اتصال Firebase نعم/لا</title>
+<title>Realtime Signup Test</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body { font-family: Arial; background:#f0f2f5; display:flex; justify-content:center; align-items:center; height:100vh; }
-.box { background:white; padding:20px; width:320px; border-radius:8px; box-shadow:0 2px 10px rgba(0,0,0,0.2); text-align:center; }
-.success { color:green; font-size:20px; }
-.error { color:red; font-size:20px; }
+body{font-family:Arial;background:#f0f2f5;padding:20px}
+.box{background:#fff;padding:20px;max-width:350px;margin:auto;border-radius:8px}
+input,button{width:100%;padding:10px;margin-top:10px}
+button{background:#4267B2;color:#fff;border:0}
+#msg{margin-top:15px;white-space:pre-wrap;font-weight:bold}
+.ok{color:green}
+.err{color:red}
 </style>
 </head>
 <body>
+
 <div class="box">
-  <h2>اختبار اتصال Firebase</h2>
-  <div id="status" class="error">جارٍ اختبار الاتصال...</div>
+  <h3>تسجيل (أي اسم / أي لغة)</h3>
+  <input id="u" placeholder="اسم المستخدم">
+  <input id="p" placeholder="كلمة المرور">
+  <button onclick="signup()">تسجيل</button>
+  <div id="msg"></div>
 </div>
 
+<!-- Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.16.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.16.0/firebase-database.js"></script>
 
 <script>
+const msg = document.getElementById("msg");
+function show(t,ok=false){
+  msg.className = ok ? "ok" : "err";
+  msg.textContent = t;
+}
+
+/* config */
 const firebaseConfig = {
   apiKey: "AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",
   authDomain: "book-ee927.firebaseapp.com",
@@ -28,50 +43,43 @@ const firebaseConfig = {
   projectId: "book-ee927",
   storageBucket: "book-ee927.firebasestorage.app",
   messagingSenderId: "523457475998",
-  appId: "1:523457475998:web:395114f92143b4f3d0128f",
-  measurementId: "G-9BY7W9WJYP"
+  appId: "1:523457475998:web:395114f92143b4f3d0128f"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const status = document.getElementById("status");
+/* init */
+try{
+  firebase.initializeApp(firebaseConfig);
+  show("⏳ تم تحميل Firebase، جاهز للاختبار...");
+}catch(e){
+  show("❌ فشل تهيئة Firebase:\n"+e.message);
+}
 
-let responded = false;
+/* signup */
+function signup(){
+  const u = document.getElementById("u").value.trim();
+  const p = document.getElementById("p").value.trim();
 
-// مسار اختبار
-const testRef = db.ref("test_connection_flag");
-
-// إنشاء مهلة للتأكد من عدم تعليق الصفحة
-const timeout = setTimeout(() => {
-  if(!responded){
-    status.textContent = "❌ لا";
-    status.className = "error";
-    responded = true;
+  if(!u || !p){
+    show("❌ الاسم أو كلمة المرور فارغة");
+    return;
   }
-}, 2000); // 2 ثواني
 
-// كتابة وقراءة
-testRef.set({ ping: true })
-.then(() => testRef.once("value"))
-.then(snapshot => {
-  if(responded) return;
-  const val = snapshot.val();
-  if(val && val.ping){
-    status.textContent = "✅ نعم";
-    status.className = "success";
-  } else {
-    status.textContent = "❌ لا";
-    status.className = "error";
-  }
-  responded = true;
-})
-.catch(() => {
-  if(!responded){
-    status.textContent = "❌ لا";
-    status.className = "error";
-    responded = true;
-  }
-});
+  show("⏳ جاري الكتابة في Realtime Database...");
+
+  const id = Date.now(); // ID بسيط
+  firebase.database().ref("Users/"+id).set({
+    username: u,
+    password: p,
+    time: new Date().toISOString()
+  })
+  .then(()=>{
+    show("✅ تم التسجيل بنجاح\nID: "+id, true);
+  })
+  .catch(err=>{
+    show("❌ فشل الكتابة:\n"+err.code+"\n"+err.message);
+  });
+}
 </script>
+
 </body>
 </html>
