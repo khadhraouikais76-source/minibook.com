@@ -4,135 +4,137 @@
 <meta charset="UTF-8">
 <title>MiniBook</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{font-family:sans-serif;background:#f0f2f5;margin:0}
-.card{background:#fff;padding:15px;margin:10px;border-radius:8px}
-input,textarea,button{width:100%;margin:5px 0;padding:10px}
-button{background:#1877f2;color:#fff;border:none}
-.post img{max-width:100%;border-radius:8px}
-.hidden{display:none}
+body { font-family: Arial; background:#f0f2f5; margin:0 }
+.box { max-width:500px; margin:20px auto; background:#fff; padding:15px; border-radius:8px }
+input, textarea, button { width:100%; margin:5px 0; padding:10px }
+button { background:#1877f2; color:#fff; border:0; border-radius:5px }
+.post { border-top:1px solid #ddd; padding:10px 0 }
+img { max-width:100%; border-radius:8px }
 </style>
 </head>
+
 <body>
 
-<div id="auth" class="card">
-<h3>MiniBook</h3>
-<input id="username" placeholder="اسم المستخدم">
-<input id="password" type="password" placeholder="كلمة المرور">
-<button onclick="register()">إنشاء حساب</button>
-<button onclick="login()">تسجيل الدخول</button>
-<p id="authMsg"></p>
+<div id="auth" class="box">
+  <h3>إنشاء حساب / دخول</h3>
+  <input id="username" placeholder="اسم المستخدم">
+  <button onclick="login()">دخول</button>
+  <p id="msg"></p>
 </div>
 
-<div id="app" class="hidden">
-<div class="card">
-<h3 id="welcome"></h3>
-<input type="file" id="avatar">
-<button onclick="uploadAvatar()">تغيير الصورة</button>
-<button onclick="logout()">خروج</button>
+<div id="app" class="box" style="display:none">
+  <h3 id="welcome"></h3>
+  <textarea id="postText" placeholder="ماذا تفكر؟"></textarea>
+  <input type="file" id="postImage">
+  <button onclick="addPost()">نشر</button>
+  <button onclick="logout()">تسجيل الخروج</button>
+  <div id="posts"></div>
 </div>
 
-<div class="card">
-<textarea id="postText" placeholder="ماذا تفكر؟"></textarea>
-<input type="file" id="postImage">
-<button onclick="addPost()">نشر</button>
-</div>
+<!-- Firebase CDN -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
-<div id="posts"></div>
-</div>
-
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-
-const firebaseConfig = {
+<script>
+/* 🔑 إعداداتك */
+firebase.initializeApp({
   apiKey: "AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",
   authDomain: "book-ee927.firebaseapp.com",
   databaseURL: "https://book-ee927-default-rtdb.firebaseio.com",
   projectId: "book-ee927",
   storageBucket: "book-ee927.appspot.com",
-  messagingSenderId: "523457475998",
-  appId: "1:523457475998:web:395114f92143b4f3d0128f"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getDatabase();
-const storage = getStorage();
-
-window.register = async ()=>{
-  const u=username.value.trim();
-  const p=password.value;
-  if(!u||!p)return authMsg.innerText="أدخل البيانات";
-  try{
-    await createUserWithEmailAndPassword(auth, u+"@minibook.com", p);
-    await set(ref(db,"users/"+auth.currentUser.uid),{name:u});
-  }catch(e){authMsg.innerText=e.message;}
-};
-
-window.login = async ()=>{
-  try{
-    await signInWithEmailAndPassword(auth, username.value+"@minibook.com", password.value);
-  }catch(e){authMsg.innerText=e.message;}
-};
-
-window.logout = ()=>signOut(auth);
-
-onAuthStateChanged(auth,u=>{
-  if(u){
-    auth.classList.add("hidden");
-    app.classList.remove("hidden");
-    welcome.innerText="مرحبا "+u.email.split("@")[0];
-    loadPosts();
-  }else{
-    auth.classList.remove("hidden");
-    app.classList.add("hidden");
-  }
 });
 
-window.addPost = async ()=>{
-  const text=postText.value;
-  let img="";
-  if(postImage.files[0]){
-    const r=sRef(storage,"posts/"+Date.now());
-    await uploadBytes(r,postImage.files[0]);
-    img=await getDownloadURL(r);
+const db = firebase.database();
+const storage = firebase.storage();
+
+let currentUser = localStorage.getItem("user");
+
+/* تسجيل الدخول */
+function login(){
+  const name = username.value.trim();
+  if(!name) return msg.innerText="اكتب اسم";
+
+  db.ref("users/"+name).get().then(snap=>{
+    if(!snap.exists()){
+      db.ref("users/"+name).set({name});
+    }
+    localStorage.setItem("user",name);
+    start();
+  });
+}
+
+/* تشغيل التطبيق */
+function start(){
+  currentUser = localStorage.getItem("user");
+  if(!currentUser) return;
+
+  auth.style.display="none";
+  app.style.display="block";
+  welcome.innerText="مرحبا "+currentUser;
+  loadPosts();
+}
+
+/* إضافة بوست */
+function addPost(){
+  const text = postText.value;
+  const file = postImage.files[0];
+  const id = Date.now();
+
+  if(file){
+    const ref = storage.ref("posts/"+id);
+    ref.put(file).then(()=>{
+      ref.getDownloadURL().then(url=>{
+        savePost(text,url,id);
+      });
+    });
+  }else{
+    savePost(text,"",id);
   }
-  await push(ref(db,"posts"),{
-    user:auth.currentUser.uid,
-    name:auth.currentUser.email.split("@")[0],
-    text, img
+}
+
+function savePost(text,img,id){
+  db.ref("posts/"+id).set({
+    user: currentUser,
+    text,
+    img
   });
   postText.value="";
-};
+}
 
+/* عرض البوستات */
 function loadPosts(){
-  onValue(ref(db,"posts"),snap=>{
+  db.ref("posts").on("value",snap=>{
     posts.innerHTML="";
     snap.forEach(p=>{
       const d=p.val();
-      const div=document.createElement("div");
-      div.className="card post";
-      div.innerHTML=`<b>${d.name}</b><p>${d.text}</p>${d.img?`<img src="${d.img}">`:""}
-      ${d.user===auth.currentUser.uid?`<button onclick="deletePost('${p.key}')">حذف</button>`:""}`;
-      posts.prepend(div);
+      posts.innerHTML+=`
+      <div class="post">
+        <b>${d.user}</b>
+        <p>${d.text}</p>
+        ${d.img?`<img src="${d.img}">`:""}
+        ${d.user==currentUser?`<button onclick="delPost(${p.key})">حذف</button>`:""}
+      </div>`;
     });
   });
 }
 
-window.deletePost=k=>remove(ref(db,"posts/"+k));
+/* حذف بوست */
+function delPost(id){
+  db.ref("posts/"+id).remove();
+}
 
-window.uploadAvatar=async()=>{
-  const f=avatar.files[0];
-  if(!f)return;
-  const r=sRef(storage,"avatars/"+auth.currentUser.uid);
-  await uploadBytes(r,f);
-  const url=await getDownloadURL(r);
-  await update(ref(db,"users/"+auth.currentUser.uid),{avatar:url});
-};
+/* خروج */
+function logout(){
+  localStorage.clear();
+  location.reload();
+}
+
+start();
 </script>
+
 </body>
 </html>
