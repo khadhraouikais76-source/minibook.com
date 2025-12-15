@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>MiniBook</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
 body { font-family: Arial; background:#f0f2f5; margin:0 }
 .box { max-width:500px; margin:20px auto; background:#fff; padding:15px; border-radius:8px }
@@ -12,34 +11,43 @@ input, textarea, button { width:100%; margin:5px 0; padding:10px }
 button { background:#1877f2; color:#fff; border:0; border-radius:5px }
 .post { border-top:1px solid #ddd; padding:10px 0 }
 img { max-width:100%; border-radius:8px }
+.progress { width:100%; background:#eee; border-radius:5px; overflow:hidden; margin:5px 0 }
+.progress-bar { height:10px; background:#1877f2; width:0 }
 </style>
 </head>
-
 <body>
 
 <div id="auth" class="box">
   <h3>إنشاء حساب / دخول</h3>
   <input id="username" placeholder="اسم المستخدم">
-  <button onclick="login()">دخول</button>
+  <input type="password" id="password" placeholder="كلمة المرور">
+  <button onclick="login()">دخول / تسجيل</button>
   <p id="msg"></p>
 </div>
 
 <div id="app" class="box" style="display:none">
   <h3 id="welcome"></h3>
+  <button onclick="logout()">تسجيل الخروج</button>
+  <button onclick="deleteAccount()">حذف الحساب نهائيًا</button>
+  <hr>
+  <h4>نشر بوست</h4>
   <textarea id="postText" placeholder="ماذا تفكر؟"></textarea>
   <input type="file" id="postImage">
+  <div class="progress"><div class="progress-bar" id="progress"></div></div>
   <button onclick="addPost()">نشر</button>
-  <button onclick="logout()">تسجيل الخروج</button>
-  <div id="posts"></div>
+  <hr>
+  <h4>صفحتك الشخصية</h4>
+  <div id="personalPosts"></div>
+  <hr>
+  <h4>الصفحة العامة</h4>
+  <div id="allPosts"></div>
 </div>
 
-<!-- Firebase CDN -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
 <script>
-/* 🔑 إعداداتك */
 firebase.initializeApp({
   apiKey: "AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",
   authDomain: "book-ee927.firebaseapp.com",
@@ -50,75 +58,100 @@ firebase.initializeApp({
 
 const db = firebase.database();
 const storage = firebase.storage();
-
 let currentUser = localStorage.getItem("user");
 
-/* تسجيل الدخول */
+/* تسجيل الدخول / إنشاء حساب */
 function login(){
   const name = username.value.trim();
-  if(!name) return msg.innerText="اكتب اسم";
+  const pass = password.value.trim();
+  if(!name || !pass) return msg.innerText="اكتب اسم وكلمة المرور";
 
   db.ref("users/"+name).get().then(snap=>{
     if(!snap.exists()){
-      db.ref("users/"+name).set({name});
+      db.ref("users/"+name).set({name,password:pass});
     }
     localStorage.setItem("user",name);
     start();
   });
 }
 
-/* تشغيل التطبيق */
+/* بدء التطبيق */
 function start(){
   currentUser = localStorage.getItem("user");
   if(!currentUser) return;
-
-  auth.style.display="none";
-  app.style.display="block";
-  welcome.innerText="مرحبا "+currentUser;
-  loadPosts();
+  document.getElementById("auth").style.display="none";
+  document.getElementById("app").style.display="block";
+  document.getElementById("welcome").innerText="مرحبا "+currentUser;
+  loadPersonalPosts();
+  loadAllPosts();
 }
 
 /* إضافة بوست */
 function addPost(){
-  const text = postText.value;
-  const file = postImage.files[0];
+  const text = document.getElementById("postText").value.trim();
+  const file = document.getElementById("postImage").files[0];
   const id = Date.now();
 
+  if(!text && !file) return alert("اكتب نص أو اختر صورة");
+
   if(file){
-    const ref = storage.ref("posts/"+id);
-    ref.put(file).then(()=>{
-      ref.getDownloadURL().then(url=>{
+    const storageRef = storage.ref('posts/' + id + '_' + file.name);
+    const uploadTask = storageRef.put(file);
+
+    uploadTask.on('state_changed', snapshot => {
+      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+      document.getElementById("progress").style.width = progress + "%";
+    }, error => {
+      console.error(error);
+    }, () => {
+      uploadTask.snapshot.ref.getDownloadURL().then(url => {
         savePost(text,url,id);
       });
     });
-  }else{
+  } else {
     savePost(text,"",id);
   }
 }
 
 function savePost(text,img,id){
-  db.ref("posts/"+id).set({
-    user: currentUser,
-    text,
-    img
-  });
-  postText.value="";
+  db.ref("posts/"+id).set({user:currentUser,text,img});
+  document.getElementById("postText").value="";
+  document.getElementById("postImage").value="";
+  document.getElementById("progress").style.width="0%";
 }
 
-/* عرض البوستات */
-function loadPosts(){
-  db.ref("posts").on("value",snap=>{
-    posts.innerHTML="";
-    snap.forEach(p=>{
-      const d=p.val();
-      posts.innerHTML+=`
-      <div class="post">
+/* تحميل البوستات الشخصية */
+function loadPersonalPosts(){
+  db.ref("posts").on("value", snap => {
+    let html = "";
+    snap.forEach(p => {
+      const d = p.val();
+      if(d.user === currentUser){
+        html += `<div class="post">
+          <b>${d.user}</b>
+          <p>${d.text}</p>
+          ${d.img?`<img src="${d.img}">`:""}
+          <button onclick="delPost('${p.key}')">حذف</button>
+        </div>`;
+      }
+    });
+    document.getElementById("personalPosts").innerHTML = html;
+  });
+}
+
+/* تحميل كل البوستات */
+function loadAllPosts(){
+  db.ref("posts").on("value", snap => {
+    let html = "";
+    snap.forEach(p => {
+      const d = p.val();
+      html += `<div class="post">
         <b>${d.user}</b>
         <p>${d.text}</p>
         ${d.img?`<img src="${d.img}">`:""}
-        ${d.user==currentUser?`<button onclick="delPost(${p.key})">حذف</button>`:""}
       </div>`;
     });
+    document.getElementById("allPosts").innerHTML = html;
   });
 }
 
@@ -127,7 +160,22 @@ function delPost(id){
   db.ref("posts/"+id).remove();
 }
 
-/* خروج */
+/* حذف الحساب نهائيًا */
+function deleteAccount(){
+  if(!confirm("هل تريد حذف حسابك نهائيًا؟ سيتم مسح كل البوستات")) return;
+  db.ref("posts").once("value").then(snap=>{
+    snap.forEach(p=>{
+      if(p.val().user === currentUser){
+        db.ref("posts/"+p.key).remove();
+      }
+    });
+    db.ref("users/"+currentUser).remove();
+    localStorage.clear();
+    location.reload();
+  });
+}
+
+/* تسجيل الخروج */
 function logout(){
   localStorage.clear();
   location.reload();
@@ -135,6 +183,5 @@ function logout(){
 
 start();
 </script>
-
 </body>
 </html>
