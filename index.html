@@ -1,284 +1,421 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
-<title>MiniBook</title>
+<meta name="description" content="MiniBook Pro - شبكة اجتماعية صغيرة وجميلة للتواصل مع الأصدقاء، مشاركة المنشورات والدردشة.">
+<meta name="keywords" content="MiniBook, réseau social, chat, amis, publications, profil">
+<meta name="author" content="MiniBook Pro Team">
+<meta name="robots" content="index, follow">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="theme-color" content="#6b46c1">
+<meta property="og:title" content="MiniBook Pro">
+<meta property="og:description" content="MiniBook Pro - شبكة اجتماعية صغيرة وجميلة للتواصل مع الأصدقاء، مشاركة المنشورات والدردشة.">
+<meta property="og:image" content="https://yourdomain.com/path-to-preview-image.png">
+<meta property="og:url" content="https://yourdomain.com">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MiniBook Pro">
+<meta name="twitter:description" content="MiniBook Pro - شبكة اجتماعية صغيرة وجميلة للتواصل مع الأصدقاء، مشاركة المنشورات والدردشة.">
+<meta name="twitter:image" content="https://yourdomain.com/path-to-preview-image.png">
+<link rel="icon" type="image/png" href="https://yourdomain.com/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<title>MiniBook Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body { font-family: Arial; background:#f0f2f5; margin:0; }
-.box { max-width:500px; margin:20px auto; background:#fff; padding:15px; border-radius:8px; }
-input, textarea, button { width:100%; margin:5px 0; padding:10px; }
-button { background:#1877f2; color:#fff; border:0; border-radius:5px; cursor:pointer; }
-.post { border-top:1px solid #ddd; padding:10px 0; }
-img { max-width:100%; border-radius:8px; margin-top:5px; display:block; }
-#progressContainer { width:50px; height:50px; margin:10px 0; position:relative; }
-#progressCircle { stroke-dasharray: 157; stroke-dashoffset: 157; stroke:#1877f2; stroke-width:8; fill:none; transform:rotate(-90deg); transform-origin:center; transition: stroke-dashoffset 0.2s; }
-#progressBg { stroke:#eee; stroke-width:8; fill:none; }
-#preview { max-width:100%; margin-top:5px; border-radius:8px; display:none; }
-#statusMsg { color:red; font-weight:bold; margin-top:5px; min-height:20px; text-align:center; }
-#progressText { position:absolute; width:100%; text-align:center; top:50%; left:0; transform:translateY(-50%); font-weight:bold; font-size:12px; }
+/* ======================= General CSS ======================= */
+* { box-sizing: border-box; }
+body { margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f5f7fa; color:#333; }
+.hidden { display: none !important; }
+#auth, #app { width:100%; }
+
+/* ======================= Auth page ======================= */
+#auth { min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#667eea,#764ba2); }
+#auth .box { max-width:400px; width:90%; padding:35px; border-radius:20px; background:#fff; box-shadow:0 15px 35px rgba(0,0,0,0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+#auth .box:hover { transform:translateY(-8px); box-shadow:0 20px 45px rgba(0,0,0,0.25); }
+#auth h3 { text-align:center; color:#6b46c1; font-size:28px; margin-bottom:25px; letter-spacing:1px; }
+#auth input, #auth button { width:100%; padding:14px; margin-bottom:12px; font-size:16px; border-radius:8px; border:1px solid #ccc; transition: all 0.3s ease; }
+#auth input:focus { border-color:#6b46c1; box-shadow:0 0 12px rgba(107,70,193,0.4); outline:none; }
+#auth button.primary { background:#6b46c1; color:#fff; border:none; cursor:pointer; font-weight:bold; }
+#auth button.primary:hover { background:#553c9a; }
+#authMsg { color:#e53e3e; text-align:center; margin-top:10px; font-weight:bold; }
+
+/* ======================= Navbar ======================= */
+.navbar { display:flex; gap:12px; padding:12px 20px; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.1); position:sticky; top:0; z-index:10; border-radius:0 0 15px 15px; }
+.navbar button { padding:10px 18px; cursor:pointer; background:#f0f0f0; border:none; border-radius:10px; transition: all 0.3s ease; font-weight:bold; }
+.navbar button:hover { background:#6b46c1; color:#fff; }
+
+.container { max-width:950px; margin:auto; padding:25px; }
+
+/* ======================= Boxes ======================= */
+.box { background:#fff; padding:25px; border-radius:20px; margin-bottom:25px; box-shadow:0 10px 25px rgba(0,0,0,0.08); transition: all 0.3s ease; }
+.box:hover { transform:translateY(-3px); box-shadow:0 15px 35px rgba(0,0,0,0.12); }
+
+/* ======================= Responsive ======================= */
+@media (max-width:768px){ .container{margin:15px;padding:15px;} .navbar{flex-wrap:wrap;} .navbar button{flex:1 1 auto;font-size:15px;} }
+@media (max-width:480px){ #auth h3{font-size:24px;} input, textarea, button.primary{font-size:14px; padding:12px;} }
+
+/* ======================= Extra elements ======================= */
+.avatar { width:60px; height:60px; border-radius:50%; object-fit:cover; margin-right:12px; border:2px solid #6b46c1; }
+.flex { display:flex; align-items:center; gap:12px; }
+.post { border-bottom:1px solid #e0e0e0; padding:15px 0; transition: background 0.3s ease; }
+.post:hover { background:#f9f7ff; }
+.post img { max-width:100%; border-radius:15px; margin-top:10px; }
+.avatar-placeholder { width:45px; height:45px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; margin-right:10px; font-size:18px; }
+.chat-container { max-height:320px; overflow-y:auto; border:1px solid #ddd; padding:12px; border-radius:15px; background:#f8f8f8; margin-bottom:12px; }
+.chat-msg.me { text-align:right; margin:5px 0; background:#e9d8fd; padding:8px 12px; border-radius:15px; display:inline-block; }
+.chat-msg.friend { text-align:left; margin:5px 0; background:#d0ebff; padding:8px 12px; border-radius:15px; display:inline-block; }
+.emoji-btn { cursor:pointer; margin-right:6px; transition: transform 0.2s ease; }
+.emoji-btn:hover { transform:scale(1.2); }
+.comment input { width:70%; margin-right:5px; padding:8px; border-radius:10px; border:1px solid #ccc; }
+.user-card { display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:8px 0; border-bottom:1px solid #eee; }
+.user-card button { padding:6px 12px; border:none; border-radius:10px; cursor:pointer; background:#6b46c1; color:#fff; transition:background 0.3s ease; }
+.user-card button:hover { background:#553c9a; }
+textarea { resize:none; border-radius:12px; border:1px solid #ccc; padding:10px; font-family:inherit; }
+
+/* ======================= Loader ======================= */
+.loader {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #6b46c1;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
 </style>
 </head>
 <body>
 
-<div id="auth" class="box">
-  <h3>إنشاء حساب / دخول</h3>
-  <input id="username" placeholder="اسم المستخدم">
-  <input type="password" id="password" placeholder="كلمة المرور">
-  <button onclick="login()">دخول / تسجيل</button>
-  <p id="msg"></p>
-</div>
-
-<div id="app" class="box" style="display:none">
-  <h3 id="welcome"></h3>
-  <button onclick="logout()">تسجيل الخروج</button>
-  <button onclick="deleteAccount()">حذف الحساب نهائيًا</button>
-  <hr>
-  <h4>نشر بوست</h4>
-  <textarea id="postText" placeholder="ماذا تفكر؟"></textarea>
-  <input type="file" id="postImage" accept=".jpg,.jpeg,.png,.gif" onchange="previewImage(this)">
-  <img id="preview">
-  <div id="progressContainer">
-    <svg width="50" height="50">
-      <circle id="progressBg" cx="25" cy="25" r="25"></circle>
-      <circle id="progressCircle" cx="25" cy="25" r="25"></circle>
-    </svg>
-    <div id="progressText">0%</div>
+<!-- PAGE D'AUTHENTIFICATION -->
+<div id="auth" class="container">
+  <div class="box">
+    <h3>Connexion / Inscription</h3>
+    <input id="username" placeholder="Nom d'utilisateur">
+    <input id="password" type="password" placeholder="Mot de passe">
+    <button class="primary" onclick="login()">Connexion / Inscription</button>
+    <p id="authMsg"></p>
   </div>
-  <div id="statusMsg">ارفع صورة أو اكتب نص</div>
-  <button id="publishBtn" onclick="addPost()">نشر</button>
-  <hr>
-  <h4>صفحتك الشخصية</h4>
-  <div id="personalPosts"></div>
-  <hr>
-  <h4>الصفحة العامة</h4>
-  <div id="allPosts"></div>
 </div>
 
+<!-- NAVBAR -->
+<div id="navbar" class="navbar hidden">
+  <button onclick="openTab('feed')">Fil d'actualité</button>
+  <button onclick="openTab('profile')">Profil</button>
+  <button onclick="openTab('friends')">Amis</button>
+  <button onclick="openTab('chat')">Chat</button>
+  <button onclick="logout()">Déconnexion</button>
+</div>
+
+<div id="app" class="container">
+
+  <!-- Feed -->
+  <div id="feed" class="box">
+    <textarea id="postText" placeholder="À quoi pensez-vous ?"></textarea>
+    <input type="file" id="postImage" accept="image/*">
+    <button class="primary" onclick="addPost()">Publier</button>
+    <div id="allPosts"><div id="postsLoader" class="loader"></div></div>
+  </div>
+
+  <!-- Profile -->
+  <div id="profile" class="box hidden">
+    <div class="flex">
+      <img id="profilePic" class="avatar" src="">
+      <input type="file" accept="image/*" onchange="uploadAvatar(this)">
+    </div>
+    <textarea id="bio" placeholder="Écrire une bio..."></textarea>
+    <button class="primary" onclick="saveBio()">Enregistrer</button>
+    <h4>Mes publications</h4>
+    <div id="myPosts"><div id="myPostsLoader" class="loader"></div></div>
+  </div>
+
+  <!-- Friends -->
+  <div id="friends" class="box hidden">
+    <h3>Amis et utilisateurs</h3>
+    <input type="text" id="searchUser" placeholder="Rechercher..." onkeyup="filterUsers()">
+    <div id="allUsers"><div id="usersLoader" class="loader"></div></div>
+  </div>
+
+  <!-- Chat -->
+  <div id="chat" class="box hidden">
+    <h3>Chat avec les amis</h3>
+    <select id="chatFriendSelect" onchange="loadChat()">
+      <option value="">Choisir un ami</option>
+    </select>
+    <div id="chatContainer"><div id="chatLoader" class="loader"></div></div>
+    <textarea id="chatInput" placeholder="Écrire un message"></textarea>
+    <button class="primary" onclick="sendMessage()">Envoyer</button>
+  </div>
+
+</div>
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
 <script>
+// ===== DOM =====
+const auth = document.getElementById("auth");
+const navbar = document.getElementById("navbar");
+const app = document.getElementById("app");
+const username = document.getElementById("username");
+const password = document.getElementById("password");
+const authMsg = document.getElementById("authMsg");
+const allPosts = document.getElementById("allPosts");
+const myPosts = document.getElementById("myPosts");
+const allUsers = document.getElementById("allUsers");
+const chatFriendSelect = document.getElementById("chatFriendSelect");
+const chatContainer = document.getElementById("chatContainer");
+const chatInput = document.getElementById("chatInput");
+const postText = document.getElementById("postText");
+const postImage = document.getElementById("postImage");
+const bio = document.getElementById("bio");
+const profilePic = document.getElementById("profilePic");
+
+// Loaders
+const postsLoader = document.getElementById("postsLoader");
+const myPostsLoader = document.getElementById("myPostsLoader");
+const usersLoader = document.getElementById("usersLoader");
+const chatLoader = document.getElementById("chatLoader");
+
+// ===== Firebase =====
 firebase.initializeApp({
-  apiKey: "AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",
-  authDomain: "book-ee927.firebaseapp.com",
-  databaseURL: "https://book-ee927-default-rtdb.firebaseio.com",
-  projectId: "book-ee927",
-  storageBucket: "book-ee927.appspot.com",
+  apiKey:"AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",
+  databaseURL:"https://book-ee927-default-rtdb.firebaseio.com"
 });
-
 const db = firebase.database();
-const storage = firebase.storage();
-let currentUser = localStorage.getItem("user");
-const msg = document.getElementById("msg");
-const statusMsg = document.getElementById("statusMsg");
-const progressText = document.getElementById("progressText");
+let user = null;
+let currentChatFriend = null;
 
-/* تسجيل الدخول */
+// Restore user
+const savedUser = localStorage.getItem("user");
+if(savedUser){ user = savedUser; start(); }
+
+// ===== Functions =====
+function getUserColor(name){
+  let hash=0; for(let i=0;i<name.length;i++){hash=name.charCodeAt(i)+((hash<<5)-hash);}
+  const c=(hash & 0x00FFFFFF).toString(16).toUpperCase();
+  return "#"+("00000"+c).slice(-6);
+}
+
+// ---------- AUTH ----------
 function login(){
-  const name = document.getElementById("username").value.trim();
-  const pass = document.getElementById("password").value.trim();
-  if(!name || !pass){
-    msg.innerText="اكتب اسم وكلمة المرور";
-    return;
-  }
-  db.ref("users/"+name).get().then(snap=>{
-    if(!snap.exists()){
-      db.ref("users/"+name).set({name,password:pass});
-    }
-    localStorage.setItem("user",name);
+  const u=username.value.trim();
+  const p=password.value.trim();
+  if(!u||!p) { authMsg.innerText="Entrez tout"; return; }
+  db.ref("users/"+u).once("value").then(s=>{
+    if(!s.exists()){ db.ref("users/"+u).set({pass:p,bio:"",avatar:"",friends:{}}); }
+    else if(s.val().pass!==p){ authMsg.innerText="Mot de passe incorrect"; return; }
+    user = u;
+    localStorage.setItem("user", user); // حفظ المستخدم
     start();
-  }).catch(e=>{
-    console.error(e);
-    msg.innerText = "خطأ في الاتصال بقاعدة البيانات: " + e.message;
   });
 }
 
-/* بدء التطبيق */
+// ---------- START ----------
 function start(){
-  currentUser = localStorage.getItem("user");
-  if(!currentUser) return;
-  document.getElementById("auth").style.display="none";
-  document.getElementById("app").style.display="block";
-  document.getElementById("welcome").innerText="مرحبا "+currentUser;
-  loadPersonalPosts();
-  loadAllPosts();
+  auth.classList.add("hidden");
+  navbar.classList.remove("hidden");
+  app.classList.remove("hidden");
+  openTab('feed');
+  loadFeed();
+  loadProfile();
+  loadAllUsers();
+  loadChatFriends();
 }
 
-/* معاينة الصورة */
-function previewImage(input){
-  const file = input.files[0];
-  const preview = document.getElementById("preview");
-  const maxSize = 2*1024*1024;
-  if(!file){
-    preview.style.display = "none";
-    statusMsg.innerText = "لم يتم اختيار أي صورة";
-    statusMsg.style.color="red";
-    return;
-  }
-  if(!/\.(jpe?g|png|gif)$/i.test(file.name)){
-    preview.style.display = "none";
-    statusMsg.innerText = "صيغة الصورة غير مدعومة (jpg, png, gif)";
-    statusMsg.style.color="red";
-    input.value = "";
-    return;
-  }
-  if(file.size > maxSize){
-    preview.style.display = "none";
-    statusMsg.innerText = "الملف كبير جدًا، الحد الأقصى 2MB";
-    statusMsg.style.color="red";
-    input.value = "";
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = e=>{
-    preview.src = e.target.result;
-    preview.style.display = "block";
-    statusMsg.innerText = "تم اختيار الصورة بنجاح";
-    statusMsg.style.color="green";
+// ---------- TAB ----------
+function openTab(id){
+  ['feed','profile','friends','chat'].forEach(t=>document.getElementById(t).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+// ---------- POSTS ----------
+function addPost(){
+  const text=postText.value.trim();
+  const file=postImage.files[0];
+  if(!text && !file) return;
+  const id=Date.now();
+  if(file){
+    const reader=new FileReader();
+    reader.onload=function(e){ savePost(text,e.target.result,id); };
+    reader.readAsDataURL(file);
+  } else { savePost(text,"",id); }
+}
+
+function savePost(text,img,id){
+  db.ref("users/"+user).once("value").then(s=>{
+    const avatar=s.val().avatar||"";
+    db.ref("posts/"+id).set({user,userAvatar:avatar,text,img,time:Date.now(),likes:{},comments:{}});
+    postText.value=""; postImage.value="";
+  });
+}
+
+function renderPost(d,id){
+  let likes = Object.values(d.likes||{}).join(" ");
+  let commentsHtml = "";
+  if(d.comments){ for(const c in d.comments){ commentsHtml += `<div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>`; } }
+  let avatarHTML = d.userAvatar ? `<img src="${d.userAvatar}" class="avatar">` : `<div class="avatar-placeholder" style="background:${getUserColor(d.user)}">${d.user[0].toUpperCase()}</div>`;
+  return `<div class="post"><div class="post-header flex">${avatarHTML}<b>${d.user}</b></div><p>${d.text||""}</p>${d.img?`<img src="${d.img}">`:''}<div class="small">${new Date(d.time).toLocaleString()}</div><div><span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span><span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span><span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span><span>${likes}</span></div><div class="comment">${commentsHtml}<input placeholder="Écrire un commentaire..." id="c${id}"><button onclick="addComment('${id}')">Commenter</button></div></div>`;
+}
+
+function toggleLike(postId,emoji){ db.ref(`posts/${postId}/likes/${user}`).once("value").then(s=>{ if(s.exists() && s.val()===emoji){ db.ref(`posts/${postId}/likes/${user}`).remove(); } else { db.ref(`posts/${postId}/likes/${user}`).set(emoji); } }); }
+function addComment(postId){ const input=document.getElementById("c"+postId); const text=input.value.trim(); if(!text) return; const commentId=Date.now(); db.ref(`posts/${postId}/comments/${commentId}`).set({user,text}); input.value=""; }
+
+// ---------- LOAD FEED ----------
+function loadFeed(){
+  postsLoader.style.display="block";
+  db.ref("posts").on("value", s => {
+    postsLoader.style.display="none";
+    let posts=[];
+    s.forEach(p=>{posts.push({key:p.key,val:p.val()});});
+    posts.sort((a,b)=>b.val.time - a.val.time);
+    allPosts.innerHTML="";
+    posts.forEach(p=>{allPosts.innerHTML+=renderPost(p.val,p.key);});
+  });
+}
+
+// ---------- PROFILE ----------
+function loadProfile(){
+  myPostsLoader.style.display="block";
+  db.ref("users/"+user).once("value").then(s=>{
+    bio.value=s.val().bio||"";
+    profilePic.src=s.val().avatar||"";
+  });
+  db.ref("posts").on("value",s=>{
+    myPostsLoader.style.display="none";
+    let posts=[];
+    s.forEach(p=>{ if(p.val().user===user){posts.push({key:p.key,val:p.val()});} });
+    posts.sort((a,b)=>b.val.time - a.val.time);
+    myPosts.innerHTML="";
+    posts.forEach(p=>{
+      const postHTML = renderPost(p.val,p.key);
+      myPosts.innerHTML += postHTML;
+
+      // إضافة Event listener لكل زر تعليق في صفحة البروفايل
+      const btn = myPosts.querySelector(`#c${p.key}`).nextElementSibling;
+      if(btn){
+        btn.onclick = () => addComment(p.key);
+      }
+    });
+  });
+}
+
+// ---------- AVATAR ----------
+function uploadAvatar(input){
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const url=e.target.result;
+    db.ref("users/"+user+"/avatar").set(url);
+    profilePic.src=url;
+    db.ref("posts").once("value").then(s=>{
+      s.forEach(p=>{ if(p.val().user===user){ db.ref("posts/"+p.key+"/userAvatar").set(url); } });
+    });
   };
   reader.readAsDataURL(file);
 }
 
-/* تحديث البروغرس */
-function setProgress(percent){
-  const circle = document.getElementById("progressCircle");
-  const offset = 157 - (157*percent/100);
-  circle.style.strokeDashoffset = offset;
-  progressText.innerText = percent.toFixed(0)+"%";
-}
+function saveBio(){ db.ref("users/"+user+"/bio").set(bio.value); }
 
-/* نشر البوست */
-async function addPost() {
-  const btn = document.getElementById("publishBtn");
-  btn.disabled = true;
-  const text = document.getElementById("postText").value.trim();
-  const fileInput = document.getElementById("postImage");
-  const file = fileInput.files[0];
-  const id = Date.now();
+// ---------- FRIENDS ----------
+function loadAllUsers(){
+  usersLoader.style.display="block";
+  db.ref("users").once("value").then(s=>{
+    usersLoader.style.display="none";
+    allUsers.innerHTML="";
 
-  if (!text && !file) {
-    statusMsg.innerText = "اكتب نص أو ارفع صورة";
-    statusMsg.style.color = "red";
-    btn.disabled = false;
-    return;
-  }
+    const friendsList = [];
+    const othersList = [];
 
-  // كل شيء جيد حتى الآن
-  statusMsg.innerText = "لا يوجد مشكلة";
-  statusMsg.style.color = "green";
+    s.forEach(u=>{
+      if(u.key === user) return;
+      const data = u.val();
+      db.ref(`users/${user}/friends/${u.key}`).once("value").then(f=>{
+        const avatarHTML = data.avatar ? 
+          `<img src="${data.avatar}" class="avatar">` : 
+          `<div class="avatar-placeholder" style="background:${getUserColor(u.key)}">${u.key[0].toUpperCase()}</div>`;
+        const btnText = f.exists() ? "Supprimer" : "Ajouter";
+        const btnAction = f.exists() ? `removeFriend('${u.key}')` : `addFriend('${u.key}')`;
+        const userCardHTML = `<div class="user-card">${avatarHTML}<b>${u.key}</b><button onclick="${btnAction}">${btnText}</button></div>`;
 
-  if (file) {
-    // تحقق من الصيغة والحجم
-    if (!/\.(jpe?g|png|gif)$/i.test(file.name)) {
-      statusMsg.innerText = "صيغة الصورة غير مدعومة (jpg, png, gif)";
-      statusMsg.style.color = "red";
-      btn.disabled = false;
-      return;
-    }
-    if (file.size > 2*1024*1024) {
-      statusMsg.innerText = "الملف كبير جدًا، الحد الأقصى 2MB";
-      statusMsg.style.color = "red";
-      btn.disabled = false;
-      return;
-    }
+        if(f.exists()){ friendsList.push(userCardHTML); } 
+        else { othersList.push(userCardHTML); }
 
-    const safeName = file.name.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\.-]/g, "");
-    const storageRef = firebase.storage().ref('posts/' + id + "_" + safeName);
-
-    try {
-      const uploadTask = storageRef.put(file);
-
-      uploadTask.on('state_changed', snapshot => {
-        if(snapshot.totalBytes > 0){
-          const progress = (snapshot.bytesTransferred/snapshot.totalBytes)*100;
-          setProgress(progress);
-          statusMsg.innerText = "جاري رفع الصورة: " + progress.toFixed(0) + "%";
-          statusMsg.style.color = "black";
+        // بعد الانتهاء من كل المستخدمين نعرضهم
+        if(friendsList.length + othersList.length === s.numChildren() - 1){
+          if(friendsList.length > 0){ allUsers.innerHTML = `<h4>Amis</h4>` + friendsList.join(""); }
+          if(othersList.length > 0){ allUsers.innerHTML += `<h4>Autres utilisateurs</h4>` + othersList.join(""); }
         }
       });
-
-      // انتظار انتهاء الرفع
-      await uploadTask;
-      const url = await storageRef.getDownloadURL();
-      savePost(text, url, id);
-      statusMsg.innerText = "تم النشر بنجاح";
-      statusMsg.style.color = "green";
-      setProgress(100);
-      setTimeout(()=>setProgress(0),1000);
-      btn.disabled = false;
-
-    } catch(e){
-      console.error(e);
-      statusMsg.innerText = "فشل الرفع: " + e.message;
-      statusMsg.style.color = "red";
-      setProgress(0);
-      btn.disabled = false;
-    }
-
-  } else {
-    // نص فقط
-    savePost(text,"",id);
-    statusMsg.innerText="تم النشر بنجاح (نص فقط)";
-    statusMsg.style.color="green";
-    setProgress(100);
-    setTimeout(()=>setProgress(0),1000);
-    btn.disabled=false;
-  }
-}
-
-/* حفظ البوست */
-function savePost(text,img,id){
-  db.ref("posts/"+id).set({user:currentUser,text,img});
-  document.getElementById("postText").value="";
-  document.getElementById("postImage").value="";
-  document.getElementById("preview").style.display="none";
-  setProgress(0);
-}
-
-/* تحميل البوستات */
-function loadPersonalPosts(){
-  db.ref("posts").on("value",snap=>{
-    let html="";
-    snap.forEach(p=>{
-      const d=p.val();
-      if(d.user===currentUser){
-        html+=`<div class="post"><b>${d.user}</b><p>${d.text}</p>${d.img?`<img src="${d.img}">`:""}<button onclick="delPost('${p.key}')">حذف</button></div>`;
-      }
     });
-    document.getElementById("personalPosts").innerHTML=html;
   });
 }
 
-function loadAllPosts(){
-  db.ref("posts").on("value",snap=>{
-    let html="";
-    snap.forEach(p=>{
-      const d=p.val();
-      html+=`<div class="post"><b>${d.user}</b><p>${d.text}</p>${d.img?`<img src="${d.img}">`:""}</div>`;
-    });
-    document.getElementById("allPosts").innerHTML=html;
+function filterUsers(){
+  let val=document.getElementById("searchUser").value.toLowerCase();
+  Array.from(allUsers.children).forEach(u=>{
+    u.style.display = u.querySelector("b") && u.querySelector("b").innerText.toLowerCase().includes(val) ? "" : "none";
   });
 }
 
-function delPost(id){ db.ref("posts/"+id).remove(); }
+function addFriend(f){   
+  db.ref(`users/${user}/friends/${f}`).set(true);   
+  loadAllUsers();   
+  loadChatFriends();   
+}
 
-function deleteAccount(){
-  if(!confirm("هل تريد حذف حسابك نهائيًا؟ سيتم مسح كل البوستات")) return;
-  db.ref("posts").once("value").then(snap=>{
-    snap.forEach(p=>{
-      if(p.val().user===currentUser) db.ref("posts/"+p.key).remove();
+function removeFriend(f){   
+  db.ref(`users/${user}/friends/${f}`).remove();   
+  loadAllUsers();   
+  loadChatFriends();   
+}
+
+// ---------- CHAT ----------
+function loadChatFriends(){
+  db.ref(`users/${user}/friends`).on("value",s=>{
+    chatFriendSelect.innerHTML='<option value="">Choisir un ami</option>';
+    if(!s.exists()) return;
+    Object.keys(s.val()).forEach(f=>{
+      chatFriendSelect.innerHTML+=`<option value="${f}">${f}</option>`;
     });
-    db.ref("users/"+currentUser).remove();
-    localStorage.clear();
-    location.reload();
   });
 }
 
-function logout(){ localStorage.clear(); location.reload(); }
+function loadChat(){
+  currentChatFriend = chatFriendSelect.value;
+  chatLoader.style.display="block";
+  chatContainer.innerHTML="";
+  if(!currentChatFriend) return;
+  db.ref(`chats/${[user,currentChatFriend].sort().join("_")}`).on("value",s=>{
+    chatLoader.style.display="none";
+    chatContainer.innerHTML="";
+    s.forEach(msg=>{
+      const m = msg.val();
+      const cls = m.from===user?"me":"friend";
+      chatContainer.innerHTML+=`<div class="chat-msg ${cls}"><b>${m.from}:</b> ${m.text}</div>`;
+      chatContainer.scrollTop=chatContainer.scrollHeight;
+    });
+  });
+}
 
-start();
+function sendMessage(){
+  const text = chatInput.value.trim();
+  if(!text || !currentChatFriend) return;
+  const chatId = [user,currentChatFriend].sort().join("_");
+  const msgId = Date.now();
+  db.ref(`chats/${chatId}/${msgId}`).set({from:user,text,time:Date.now()});
+  chatInput.value="";
+}
+
+// ---------- LOGOUT ----------
+function logout(){
+  localStorage.removeItem("user"); // إزالة المستخدم عند تسجيل الخروج
+  location.reload();
+}
 </script>
 </body>
 </html>
