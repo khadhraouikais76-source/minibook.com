@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-
 <meta charset="UTF-8">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8858989765307569"
 crossorigin="anonymous"></script>
@@ -27,13 +26,12 @@ crossorigin="anonymous"></script>
 <title>MiniBook Pro</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-/* ======================= General CSS ======================= */
 * { box-sizing: border-box; }
 body { margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background:#f5f7fa; color:#333; }
 .hidden { display: none !important; }
 #auth, #app { width:100%; }
 
-/* ======================= Auth page ======================= */
+/* Auth page */
 #auth { min-height:100vh; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#667eea,#764ba2); }
 #auth .box { max-width:400px; width:90%; padding:35px; border-radius:20px; background:#fff; box-shadow:0 15px 35px rgba(0,0,0,0.2); transition: transform 0.3s ease, box-shadow 0.3s ease; }
 #auth .box:hover { transform:translateY(-8px); box-shadow:0 20px 45px rgba(0,0,0,0.25); }
@@ -44,22 +42,22 @@ body { margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; ba
 #auth button.primary:hover { background:#553c9a; }
 #authMsg { color:#e53e3e; text-align:center; margin-top:10px; font-weight:bold; }
 
-/* ======================= Navbar ======================= */
+/* Navbar */
 .navbar { display:flex; gap:12px; padding:12px 20px; background:#fff; box-shadow:0 4px 12px rgba(0,0,0,0.1); position:sticky; top:0; z-index:10; border-radius:0 0 15px 15px; }
 .navbar button { padding:10px 18px; cursor:pointer; background:#f0f0f0; border:none; border-radius:10px; transition: all 0.3s ease; font-weight:bold; }
 .navbar button:hover { background:#6b46c1; color:#fff; }
 
 .container { max-width:950px; margin:auto; padding:25px; }
 
-/* ======================= Boxes ======================= */
+/* Boxes */
 .box { background:#fff; padding:25px; border-radius:20px; margin-bottom:25px; box-shadow:0 10px 25px rgba(0,0,0,0.08); transition: all 0.3s ease; }
 .box:hover { transform:translateY(-3px); box-shadow:0 15px 35px rgba(0,0,0,0.12); }
 
-/* ======================= Responsive ======================= */
+/* Responsive */
 @media (max-width:768px){ .container{margin:15px;padding:15px;} .navbar{flex-wrap:wrap;} .navbar button{flex:1 1 auto;font-size:15px;} }
 @media (max-width:480px){ #auth h3{font-size:24px;} input, textarea, button.primary{font-size:14px; padding:12px;} }
 
-/* ======================= Extra elements ======================= */
+/* Extra elements */
 .avatar { width:60px; height:60px; border-radius:50%; object-fit:cover; margin-right:12px; border:2px solid #6b46c1; }
 .flex { display:flex; align-items:center; gap:12px; }
 .post { border-bottom:1px solid #e0e0e0; padding:15px 0; transition: background 0.3s ease; position:relative; }
@@ -76,21 +74,11 @@ body { margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; ba
 .user-card button { padding:6px 12px; border:none; border-radius:10px; cursor:pointer; background:#6b46c1; color:#fff; transition:background 0.3s ease; }
 .user-card button:hover { background:#553c9a; }
 textarea { resize:none; border-radius:12px; border:1px solid #ccc; padding:10px; font-family:inherit; }
-
-/* Delete button on posts */
 .delete-btn { position:absolute; top:10px; right:10px; background:#e53e3e; color:#fff; border:none; padding:5px 10px; border-radius:8px; cursor:pointer; }
 .delete-btn:hover { background:#c53030; }
 
-/* ======================= Loader ======================= */
-.loader {
-border: 6px solid #f3f3f3;
-border-top: 6px solid #6b46c1;
-border-radius: 50%;
-width: 40px;
-height: 40px;
-animation: spin 1s linear infinite;
-margin: 20px auto;
-}
+/* Loader */
+.loader { border: 6px solid #f3f3f3; border-top: 6px solid #6b46c1; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
 @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
 </style>
 </head>
@@ -116,45 +104,45 @@ margin: 20px auto;
   <button onclick="logout()">Déconnexion</button>
 </div>
 
-<div id="app" class="container">
+<div id="app" class="container hidden">
 
-  <!-- Feed -->
-  <div id="feed" class="box">
-    <textarea id="postText" placeholder="À quoi pensez-vous ?"></textarea>
-    <input type="file" id="postImage" accept="image/*">
-    <button class="primary" onclick="addPost()">Publier</button>
-    <div id="allPosts"><div id="postsLoader" class="loader"></div></div>
-  </div>
+<!-- Feed -->
+<div id="feed" class="box">
+  <textarea id="postText" placeholder="À quoi pensez-vous ?"></textarea>
+  <input type="file" id="postImage" accept="image/*">
+  <button class="primary" onclick="addPost()">Publier</button>
+  <div id="allPosts"><div id="postsLoader" class="loader"></div></div>
+</div>
 
-  <!-- Profile -->
-  <div id="profile" class="box hidden">
-    <div class="flex">
-      <img id="profilePic" class="avatar" src="">
-      <input type="file" accept="image/*" onchange="uploadAvatar(this)">
-    </div>
-    <textarea id="bio" placeholder="Écrire une bio..."></textarea>
-    <button class="primary" onclick="saveBio()">Enregistrer</button>
-    <h4>Mes publications</h4>
-    <div id="myPosts"><div id="myPostsLoader" class="loader"></div></div>
+<!-- Profile -->
+<div id="profile" class="box hidden">
+  <div class="flex">
+    <img id="profilePic" class="avatar" src="">
+    <input type="file" accept="image/*" onchange="uploadAvatar(this)">
   </div>
+  <textarea id="bio" placeholder="Écrire une bio..."></textarea>
+  <button class="primary" onclick="saveBio()">Enregistrer</button>
+  <h4>Mes publications</h4>
+  <div id="myPosts"><div id="myPostsLoader" class="loader"></div></div>
+</div>
 
-  <!-- Friends -->
-  <div id="friends" class="box hidden">
-    <h3>Amis et utilisateurs</h3>
-    <input type="text" id="searchUser" placeholder="Rechercher..." onkeyup="filterUsers()">
-    <div id="allUsers"><div id="usersLoader" class="loader"></div></div>
-  </div>
+<!-- Friends -->
+<div id="friends" class="box hidden">
+  <h3>Amis et utilisateurs</h3>
+  <input type="text" id="searchUser" placeholder="Rechercher..." onkeyup="filterUsers()">
+  <div id="allUsers"><div id="usersLoader" class="loader"></div></div>
+</div>
 
-  <!-- Chat -->
-  <div id="chat" class="box hidden">
-    <h3>Chat avec les amis</h3>
-    <select id="chatFriendSelect" onchange="loadChat()">
-      <option value="">Choisir un ami</option>
-    </select>
-    <div id="chatContainer"><div id="chatLoader" class="loader"></div></div>
-    <textarea id="chatInput" placeholder="Écrire un message"></textarea>
-    <button class="primary" onclick="sendMessage()">Envoyer</button>
-  </div>
+<!-- Chat -->
+<div id="chat" class="box hidden">
+  <h3>Chat avec les amis</h3>
+  <select id="chatFriendSelect" onchange="loadChat()">
+    <option value="">Choisir un ami</option>
+  </select>
+  <div id="chatContainer"><div id="chatLoader" class="loader"></div></div>
+  <textarea id="chatInput" placeholder="Écrire un message"></textarea>
+  <button class="primary" onclick="sendMessage()">Envoyer</button>
+</div>
 
 </div>
 
@@ -162,7 +150,6 @@ margin: 20px auto;
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-// ===== DOM =====
 const auth = document.getElementById("auth");
 const navbar = document.getElementById("navbar");
 const app = document.getElementById("app");
@@ -179,14 +166,11 @@ const postText = document.getElementById("postText");
 const postImage = document.getElementById("postImage");
 const bio = document.getElementById("bio");
 const profilePic = document.getElementById("profilePic");
-
-// Loaders
 const postsLoader = document.getElementById("postsLoader");
 const myPostsLoader = document.getElementById("myPostsLoader");
 const usersLoader = document.getElementById("usersLoader");
 const chatLoader = document.getElementById("chatLoader");
 
-// ===== Firebase =====
 firebase.initializeApp({
   apiKey:"AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",
   databaseURL:"https://book-ee927-default-rtdb.firebaseio.com"
@@ -195,18 +179,15 @@ const db = firebase.database();
 let user = null;
 let currentChatFriend = null;
 
-// Restore user
 const savedUser = localStorage.getItem("user");
 if(savedUser){ user = savedUser; start(); }
 
-// ===== Functions =====
 function getUserColor(name){
   let hash=0; for(let i=0;i<name.length;i++){hash=name.charCodeAt(i)+((hash<<5)-hash);}
   const c=(hash & 0x00FFFFFF).toString(16).toUpperCase();
   return "#"+("00000"+c).slice(-6);
 }
 
-// ---------- AUTH ----------
 function login(){
   const u=username.value.trim();
   const p=password.value.trim();
@@ -215,12 +196,11 @@ function login(){
     if(!s.exists()){ db.ref("users/"+u).set({pass:p,bio:"",avatar:"",friends:{}}); }
     else if(s.val().pass!==p){ authMsg.innerText="Mot de passe incorrect"; return; }
     user = u;
-    localStorage.setItem("user", user); // حفظ المستخدم
+    localStorage.setItem("user", user);
     start();
   });
 }
 
-// ---------- START ----------
 function start(){
   auth.classList.add("hidden");
   navbar.classList.remove("hidden");
@@ -232,202 +212,198 @@ function start(){
   loadChatFriends();
 }
 
-// ---------- TAB ----------
-function openTab(id){
-  ['feed','profile','friends','chat'].forEach(t=>document.getElementById(t).classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
 
-// ---------- POSTS ----------
+
+// ===== POSTS =====
 function addPost(){
-  const text=postText.value.trim();
-  const file=postImage.files[0];
-  if(!text && !file) return;
-  const id=Date.now();
-  if(file){
-    const reader=new FileReader();
-    reader.onload=function(e){ savePost(text,e.target.result,id); };
-    reader.readAsDataURL(file);
-  } else { savePost(text,"",id); }
+    const text=postText.value.trim();
+    const file=postImage.files[0];
+    if(!text && !file) return;
+    const id=Date.now();
+    if(file){
+        const reader=new FileReader();
+        reader.onload=function(e){ savePost(text,e.target.result,id); };
+        reader.readAsDataURL(file);
+    } else { savePost(text,"",id); }
 }
 
 function savePost(text,img,id){
-  db.ref("users/"+user).once("value").then(s=>{
-    const avatar=s.val().avatar||"";
-    db.ref("posts/"+id).set({user,userAvatar:avatar,text,img,time:Date.now(),likes:{},comments:{}});
-    postText.value=""; postImage.value="";
-  });
+    db.ref("users/"+user).once("value").then(s=>{
+        const avatar=s.val().avatar||"";
+        db.ref("posts/"+id).set({user,userAvatar:avatar,text,img,time:Date.now(),likes:{},comments:{}});
+        postText.value="";
+        postImage.value="";
+    });
 }
 
 function renderPost(d,id){
-  let likes = Object.values(d.likes||{}).join(" ");
-  let commentsHtml = "";
-  if(d.comments){ for(const c in d.comments){ commentsHtml += `<div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>`; } }
-  let avatarHTML = d.userAvatar ? `<img src="${d.userAvatar}" class="avatar">` : `<div class="avatar-placeholder" style="background:${getUserColor(d.user)}">${d.user[0].toUpperCase()}</div>`;
-  // Add delete button if user owns post
-  let deleteBtn = d.user===user ? `<button class="delete-btn" onclick="deletePost('${id}')">Supprimer</button>` : '';
-  return `<div class="post"><div class="post-header flex">${avatarHTML}<b>${d.user}</b></div><p>${d.text||""}</p>${d.img?`<img src="${d.img}">`:''}${deleteBtn}<div class="small">${new Date(d.time).toLocaleString()}</div><div><span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span><span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span><span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span><span>${likes}</span></div><div class="comment">${commentsHtml}<input placeholder="Écrire un commentaire..." id="c${id}"><button onclick="addComment('${id}')">Commenter</button></div></div>`;
+    let likes = Object.values(d.likes||{}).join(" ");
+    let commentsHtml = "";
+    if(d.comments){ 
+        for(const c in d.comments){
+            commentsHtml += `<div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>`;
+        } 
+    }
+    let avatarHTML = d.userAvatar ? 
+        `<img src="${d.userAvatar}" class="avatar">` : 
+        `<div class="avatar-placeholder" style="background:${getUserColor(d.user)}">${d.user[0].toUpperCase()}</div>`;
+    let deleteBtn = d.user===user ? `<button class="delete-btn" onclick="deletePost('${id}')">Supprimer</button>` : '';
+    return `<div class="post"><div class="post-header flex">${avatarHTML}<b>${d.user}</b></div><p>${d.text||""}</p>${d.img?`<img src="${d.img}">`:''}${deleteBtn}<div class="small">${new Date(d.time).toLocaleString()}</div><div><span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span><span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span><span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span><span>${likes}</span></div><div class="comment">${commentsHtml}<input placeholder="Écrire un commentaire..." id="c${id}"><button onclick="addComment('${id}')">Commenter</button></div></div>`;
 }
 
-function deletePost(id){
-  db.ref("posts/"+id).remove();
+function deletePost(id){ db.ref("posts/"+id).remove(); }
+function toggleLike(postId,emoji){ 
+    db.ref(`posts/${postId}/likes/${user}`).once("value").then(s=>{
+        if(s.exists() && s.val()===emoji){ db.ref(`posts/${postId}/likes/${user}`).remove(); } 
+        else { db.ref(`posts/${postId}/likes/${user}`).set(emoji); }
+    }); 
 }
 
-function toggleLike(postId,emoji){ db.ref(`posts/${postId}/likes/${user}`).once("value").then(s=>{ if(s.exists() && s.val()===emoji){ db.ref(`posts/${postId}/likes/${user}`).remove(); } else { db.ref(`posts/${postId}/likes/${user}`).set(emoji); } }); }
-function addComment(postId){ const input=document.getElementById("c"+postId); const text=input.value.trim(); if(!text) return; const commentId=Date.now(); db.ref(`posts/${postId}/comments/${commentId}`).set({user,text}); input.value=""; }
+function addComment(postId){
+    const input=document.getElementById("c"+postId);
+    const text=input.value.trim();
+    if(!text) return;
+    const commentId=Date.now();
+    db.ref(`posts/${postId}/comments/${commentId}`).set({user,text});
+    input.value="";
+}
 
-// ---------- LOAD FEED ----------
 function loadFeed(){
-  postsLoader.style.display="block";
-  db.ref("posts").on("value", s => {
-    postsLoader.style.display="none";
-    let posts=[];
-    s.forEach(p=>{posts.push({key:p.key,val:p.val()});});
-    posts.sort((a,b)=>b.val.time - a.val.time);
-    allPosts.innerHTML="";
-    posts.forEach(p=>{allPosts.innerHTML+=renderPost(p.val,p.key);});
-  });
+    postsLoader.style.display="block";
+    db.ref("posts").on("value", s => {
+        postsLoader.style.display="none";
+        let posts=[];
+        s.forEach(p=>{posts.push({key:p.key,val:p.val()});});
+        posts.sort((a,b)=>b.val.time - a.val.time);
+        allPosts.innerHTML="";
+        posts.forEach(p=>{allPosts.innerHTML+=renderPost(p.val,p.key);});
+    });
 }
 
-// ---------- PROFILE ----------
+// ===== PROFILE =====
 function loadProfile(){
-  myPostsLoader.style.display="block";
-  db.ref("users/"+user).once("value").then(s=>{
-    bio.value=s.val().bio||"";
-    profilePic.src=s.val().avatar||"";
-  });
-  db.ref("posts").on("value",s=>{
-    myPostsLoader.style.display="none";
-    let posts=[];
-    s.forEach(p=>{ if(p.val().user===user){posts.push({key:p.key,val:p.val()});} });
-    posts.sort((a,b)=>b.val.time - a.val.time);
-    myPosts.innerHTML="";
-    posts.forEach(p=>{
-      const postHTML = renderPost(p.val,p.key);
-      myPosts.innerHTML += postHTML;
-
-      // إضافة Event listener لكل زر تعليق في صفحة البروفايل
-      const btn = myPosts.querySelector(`#c${p.key}`).nextElementSibling;
-      if(btn){
-        btn.onclick = () => addComment(p.key);
-      }
+    myPostsLoader.style.display="block";
+    db.ref("users/"+user).once("value").then(s=>{
+        bio.value=s.val().bio||"";
+        profilePic.src=s.val().avatar||"";
     });
-  });
+    db.ref("posts").on("value",s=>{
+        myPostsLoader.style.display="none";
+        let posts=[];
+        s.forEach(p=>{ if(p.val().user===user){posts.push({key:p.key,val:p.val()});} });
+        posts.sort((a,b)=>b.val.time - a.val.time);
+        myPosts.innerHTML="";
+        posts.forEach(p=>{
+            const postHTML = renderPost(p.val,p.key);
+            myPosts.innerHTML += postHTML;
+            const btn = myPosts.querySelector(`#c${p.key}`).nextElementSibling;
+            if(btn){ btn.onclick = () => addComment(p.key); }
+        });
+    });
 }
 
-// ---------- AVATAR ----------
 function uploadAvatar(input){
-  const file=input.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    const url=e.target.result;
-    db.ref("users/"+user+"/avatar").set(url);
-    profilePic.src=url;
-    db.ref("posts").once("value").then(s=>{
-      s.forEach(p=>{ if(p.val().user===user){ db.ref("posts/"+p.key+"/userAvatar").set(url); } });
-    });
-  };
-  reader.readAsDataURL(file);
+    const file=input.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=function(e){
+        const url=e.target.result;
+        db.ref("users/"+user+"/avatar").set(url);
+        profilePic.src=url;
+        db.ref("posts").once("value").then(s=>{
+            s.forEach(p=>{ if(p.val().user===user){ db.ref("posts/"+p.key+"/userAvatar").set(url); } });
+        });
+    };
+    reader.readAsDataURL(file);
 }
 
 function saveBio(){ db.ref("users/"+user+"/bio").set(bio.value); }
 
-// ---------- FRIENDS ----------
+// ===== FRIENDS =====
 function loadAllUsers(){
-  usersLoader.style.display="block";
-  db.ref("users").once("value").then(s=>{
-    usersLoader.style.display="none";
-    allUsers.innerHTML="";
-
-    const friendsList = [];
-    const othersList = [];
-
-    s.forEach(u=>{
-      if(u.key === user) return;
-      const data = u.val();
-      db.ref(`users/${user}/friends/${u.key}`).once("value").then(f=>{
-        const avatarHTML = data.avatar ?
-          `<img src="${data.avatar}" class="avatar">` :
-          `<div class="avatar-placeholder" style="background:${getUserColor(u.key)}">${u.key[0].toUpperCase()}</div>`;
-        const btnText = f.exists() ? "Supprimer" : "Ajouter";
-        const btnAction = f.exists() ? `removeFriend('${u.key}')` : `addFriend('${u.key}')`;
-        const userCardHTML = `<div class="user-card">${avatarHTML}<b>${u.key}</b><button onclick="${btnAction}">${btnText}</button></div>`;
-
-        if(f.exists()){ friendsList.push(userCardHTML); }
-        else { othersList.push(userCardHTML); }
-
-        // بعد الانتهاء من كل المستخدمين نعرضهم
-        if(friendsList.length + othersList.length === s.numChildren() - 1){
-          if(friendsList.length > 0){ allUsers.innerHTML = `<h4>Amis</h4>` + friendsList.join(""); }
-          if(othersList.length > 0){ allUsers.innerHTML += `<h4>Autres utilisateurs</h4>` + othersList.join(""); }
-        }
-      });
+    usersLoader.style.display="block";
+    db.ref("users").once("value").then(s=>{
+        usersLoader.style.display="none";
+        allUsers.innerHTML="";
+        const friendsList = [];
+        const othersList = [];
+        s.forEach(u=>{
+            if(u.key === user) return;
+            const data = u.val();
+            db.ref(`users/${user}/friends/${u.key}`).once("value").then(f=>{
+                const avatarHTML = data.avatar ? `<img src="${data.avatar}" class="avatar">` : `<div class="avatar-placeholder" style="background:${getUserColor(u.key)}">${u.key[0].toUpperCase()}</div>`;
+                const btnText = f.exists() ? "Supprimer" : "Ajouter";
+                const btnAction = f.exists() ? `removeFriend('${u.key}')` : `addFriend('${u.key}')`;
+                const userCardHTML = `<div class="user-card">${avatarHTML}<b>${u.key}</b><button onclick="${btnAction}">${btnText}</button></div>`;
+                if(f.exists()){ friendsList.push(userCardHTML); } else { othersList.push(userCardHTML); }
+                if(friendsList.length + othersList.length === s.numChildren() - 1){
+                    if(friendsList.length > 0){ allUsers.innerHTML = `<h4>Amis</h4>` + friendsList.join(""); }
+                    if(othersList.length > 0){ allUsers.innerHTML += `<h4>Autres utilisateurs</h4>` + othersList.join(""); }
+                }
+            });
+        });
     });
-  });
 }
 
 function filterUsers(){
-  let val=document.getElementById("searchUser").value.toLowerCase();
-  Array.from(allUsers.children).forEach(u=>{
-    u.style.display = u.querySelector("b") && u.querySelector("b").innerText.toLowerCase().includes(val) ? "" : "none";
-  });
-}
-
-function addFriend(f){
-  db.ref(`users/${user}/friends/${f}`).set(true);
-  loadAllUsers();
-  loadChatFriends();
-}
-
-function removeFriend(f){
-  db.ref(`users/${user}/friends/${f}`).remove();
-  loadAllUsers();
-  loadChatFriends();
-}
-
-// ---------- CHAT ----------
-function loadChatFriends(){
-  db.ref(`users/${user}/friends`).on("value",s=>{
-    chatFriendSelect.innerHTML='<option value="">Choisir un ami</option>';
-    if(!s.exists()) return;
-    Object.keys(s.val()).forEach(f=>{
-      chatFriendSelect.innerHTML+=`<option value="${f}">${f}</option>`;
+    let val=document.getElementById("searchUser").value.toLowerCase();
+    Array.from(allUsers.children).forEach(u=>{
+        u.style.display = u.querySelector("b") && u.querySelector("b").innerText.toLowerCase().includes(val) ? "" : "none";
     });
-  });
+}
+
+function addFriend(f){ db.ref(`users/${user}/friends/${f}`).set(true); loadAllUsers(); loadChatFriends(); }
+function removeFriend(f){ db.ref(`users/${user}/friends/${f}`).remove(); loadAllUsers(); loadChatFriends(); }
+
+// ===== CHAT =====
+function loadChatFriends(){
+    db.ref(`users/${user}/friends`).on("value",s=>{
+        chatFriendSelect.innerHTML='<option value="">Choisir un ami</option>';
+        if(!s.exists()) return;
+        Object.keys(s.val()).forEach(f=>{
+            chatFriendSelect.innerHTML+=`<option value="${f}">${f}</option>`;
+        });
+    });
 }
 
 function loadChat(){
-  currentChatFriend = chatFriendSelect.value;
-  chatLoader.style.display="block";
-  chatContainer.innerHTML="";
-  if(!currentChatFriend) return;
-  db.ref(`chats/${[user,currentChatFriend].sort().join("_")}`).on("value",s=>{
-    chatLoader.style.display="none";
+    currentChatFriend = chatFriendSelect.value;
+    chatLoader.style.display="block";
     chatContainer.innerHTML="";
-    s.forEach(msg=>{
-      const m = msg.val();
-      const cls = m.from===user?"me":"friend";
-      chatContainer.innerHTML+=`<div class="chat-msg ${cls}"><b>${m.from}:</b> ${m.text}</div>`;
-      chatContainer.scrollTop=chatContainer.scrollHeight;
+    if(!currentChatFriend) return;
+    db.ref(`chats/${[user,currentChatFriend].sort().join("_")}`).on("value",s=>{
+        chatLoader.style.display="none";
+        chatContainer.innerHTML="";
+        s.forEach(msg=>{
+            const m = msg.val();
+            const cls = m.from===user?"me":"friend";
+            chatContainer.innerHTML+=`<div class="chat-msg ${cls}"><b>${m.from}:</b> ${m.text}</div>`;
+            chatContainer.scrollTop=chatContainer.scrollHeight;
+        });
     });
-  });
 }
 
 function sendMessage(){
-  const text = chatInput.value.trim();
-  if(!text || !currentChatFriend) return;
-  const chatId = [user,currentChatFriend].sort().join("_");
-  const msgId = Date.now();
-  db.ref(`chats/${chatId}/${msgId}`).set({from:user,text,time:Date.now()});
-  chatInput.value="";
+    const text = chatInput.value.trim();
+    if(!text || !currentChatFriend) return;
+    const chatId = [user,currentChatFriend].sort().join("_");
+    const msgId = Date.now();
+    db.ref(`chats/${chatId}/${msgId}`).set({from:user,text,time:Date.now()});
+    chatInput.value="";
 }
 
-// ---------- LOGOUT ----------
+// ===== LOGOUT =====
 function logout(){
-  localStorage.removeItem("user"); // إزالة المستخدم عند تسجيل الخروج
-  location.reload();
+    localStorage.removeItem("user");
+    location.reload();
 }
+
+// ===== TAB SWITCH =====
+function openTab(id){
+    ['feed','profile','friends','chat'].forEach(t=>document.getElementById(t).classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+}
+
 </script>
 </body>
 </html>
