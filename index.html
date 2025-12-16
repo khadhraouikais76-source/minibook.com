@@ -3,22 +3,22 @@
 <head>
 <p> contact: <a href="mailto:khadhraouik35@gmail.com">khadhraouik35@gmail.com</a></p>
 <meta charset="UTF-8">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8858989765307569"
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8858989765307569"
 crossorigin="anonymous"></script>
-<meta name="description" content="MiniBook Pro - شبكة اجتماعية صغيرة وجميلة للتواصل مع الأصدقاء، مشاركة المنشورات والدردشة.">
+<meta name="description" content="MiniBook Pro - شبكة اجتماعية صغيرة وجميلة للتواصل مع الأصدقاء، مشاركة المنشورات والدردشة. Un petit et joli réseau social pour communiquer avec des amis, partager des publications et discuter.">
 <meta name="keywords" content="MiniBook, réseau social, chat, amis, publications, profil">
 <meta name="author" content="MiniBook Pro Team">
 <meta name="robots" content="index, follow">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="theme-color" content="#6b46c1">
 <meta property="og:title" content="MiniBook Pro">
-<meta property="og:description" content="MiniBook Pro - شبكة اجتماعية صغيرة وجميلة للتواصل مع الأصدقاء، مشاركة المنشورات والدردشة.">
+<meta property="og:description" content="MiniBook Pro - شبكة اجتماعية صغيرة وجميلة للتواصل مع الأصدقاء، مشاركة المنشورات والدردشة. Un petit et joli réseau social pour communiquer avec des amis, partager des publications et discuter.">
 <meta property="og:image" content="https://yourdomain.com/path-to-preview-image.png">
 <meta property="og:url" content="https://yourdomain.com">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MiniBook Pro">
-<meta name="twitter:description" content="MiniBook Pro - شبكة اجتماعية صغيرة وجميلة للتواصل مع الأصدقاء، مشاركة المنشورات والدردشة.">
+<meta name="twitter:description" content="MiniBook Pro - شبكة اجتماعية صغيرة وجميلة للتواصل مع الأصدقاء، مشاركة المنشورات والدردشة Un petit et joli réseau social pour communiquer avec des amis, partager des publications et discuter.">
 <meta name="twitter:image" content="https://yourdomain.com/path-to-preview-image.png">
 <link rel="icon" type="image/png" href="https://yourdomain.com/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,7 +62,7 @@ body { margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; ba
 /* ======================= Extra elements ======================= */
 .avatar { width:60px; height:60px; border-radius:50%; object-fit:cover; margin-right:12px; border:2px solid #6b46c1; }
 .flex { display:flex; align-items:center; gap:12px; }
-.post { border-bottom:1px solid #e0e0e0; padding:15px 0; transition: background 0.3s ease; }
+.post { border-bottom:1px solid #e0e0e0; padding:15px 0; transition: background 0.3s ease; position:relative; }
 .post:hover { background:#f9f7ff; }
 .post img { max-width:100%; border-radius:15px; margin-top:10px; }
 .avatar-placeholder { width:45px; height:45px; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; margin-right:10px; font-size:18px; }
@@ -77,15 +77,19 @@ body { margin:0; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; ba
 .user-card button:hover { background:#553c9a; }
 textarea { resize:none; border-radius:12px; border:1px solid #ccc; padding:10px; font-family:inherit; }
 
+/* Delete button on posts */
+.delete-btn { position:absolute; top:10px; right:10px; background:#e53e3e; color:#fff; border:none; padding:5px 10px; border-radius:8px; cursor:pointer; }
+.delete-btn:hover { background:#c53030; }
+
 /* ======================= Loader ======================= */
 .loader {
-  border: 6px solid #f3f3f3;
-  border-top: 6px solid #6b46c1;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin: 20px auto;
+border: 6px solid #f3f3f3;
+border-top: 6px solid #6b46c1;
+border-radius: 50%;
+width: 40px;
+height: 40px;
+animation: spin 1s linear infinite;
+margin: 20px auto;
 }
 @keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
 </style>
@@ -157,7 +161,6 @@ textarea { resize:none; border-radius:12px; border:1px solid #ccc; padding:10px;
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
 <script>
 // ===== DOM =====
 const auth = document.getElementById("auth");
@@ -261,7 +264,13 @@ function renderPost(d,id){
   let commentsHtml = "";
   if(d.comments){ for(const c in d.comments){ commentsHtml += `<div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>`; } }
   let avatarHTML = d.userAvatar ? `<img src="${d.userAvatar}" class="avatar">` : `<div class="avatar-placeholder" style="background:${getUserColor(d.user)}">${d.user[0].toUpperCase()}</div>`;
-  return `<div class="post"><div class="post-header flex">${avatarHTML}<b>${d.user}</b></div><p>${d.text||""}</p>${d.img?`<img src="${d.img}">`:''}<div class="small">${new Date(d.time).toLocaleString()}</div><div><span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span><span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span><span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span><span>${likes}</span></div><div class="comment">${commentsHtml}<input placeholder="Écrire un commentaire..." id="c${id}"><button onclick="addComment('${id}')">Commenter</button></div></div>`;
+  // Add delete button if user owns post
+  let deleteBtn = d.user===user ? `<button class="delete-btn" onclick="deletePost('${id}')">Supprimer</button>` : '';
+  return `<div class="post"><div class="post-header flex">${avatarHTML}<b>${d.user}</b></div><p>${d.text||""}</p>${d.img?`<img src="${d.img}">`:''}${deleteBtn}<div class="small">${new Date(d.time).toLocaleString()}</div><div><span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span><span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span><span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span><span>${likes}</span></div><div class="comment">${commentsHtml}<input placeholder="Écrire un commentaire..." id="c${id}"><button onclick="addComment('${id}')">Commenter</button></div></div>`;
+}
+
+function deletePost(id){
+  db.ref("posts/"+id).remove();
 }
 
 function toggleLike(postId,emoji){ db.ref(`posts/${postId}/likes/${user}`).once("value").then(s=>{ if(s.exists() && s.val()===emoji){ db.ref(`posts/${postId}/likes/${user}`).remove(); } else { db.ref(`posts/${postId}/likes/${user}`).set(emoji); } }); }
@@ -338,14 +347,14 @@ function loadAllUsers(){
       if(u.key === user) return;
       const data = u.val();
       db.ref(`users/${user}/friends/${u.key}`).once("value").then(f=>{
-        const avatarHTML = data.avatar ? 
-          `<img src="${data.avatar}" class="avatar">` : 
+        const avatarHTML = data.avatar ?
+          `<img src="${data.avatar}" class="avatar">` :
           `<div class="avatar-placeholder" style="background:${getUserColor(u.key)}">${u.key[0].toUpperCase()}</div>`;
         const btnText = f.exists() ? "Supprimer" : "Ajouter";
         const btnAction = f.exists() ? `removeFriend('${u.key}')` : `addFriend('${u.key}')`;
         const userCardHTML = `<div class="user-card">${avatarHTML}<b>${u.key}</b><button onclick="${btnAction}">${btnText}</button></div>`;
 
-        if(f.exists()){ friendsList.push(userCardHTML); } 
+        if(f.exists()){ friendsList.push(userCardHTML); }
         else { othersList.push(userCardHTML); }
 
         // بعد الانتهاء من كل المستخدمين نعرضهم
@@ -365,16 +374,16 @@ function filterUsers(){
   });
 }
 
-function addFriend(f){   
-  db.ref(`users/${user}/friends/${f}`).set(true);   
-  loadAllUsers();   
-  loadChatFriends();   
+function addFriend(f){
+  db.ref(`users/${user}/friends/${f}`).set(true);
+  loadAllUsers();
+  loadChatFriends();
 }
 
-function removeFriend(f){   
-  db.ref(`users/${user}/friends/${f}`).remove();   
-  loadAllUsers();   
-  loadChatFriends();   
+function removeFriend(f){
+  db.ref(`users/${user}/friends/${f}`).remove();
+  loadAllUsers();
+  loadChatFriends();
 }
 
 // ---------- CHAT ----------
