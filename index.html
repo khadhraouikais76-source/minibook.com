@@ -184,31 +184,72 @@ function openTab(id){
 function logout(){ localStorage.removeItem("user"); location.reload(); }  
   
 // ===== Post Handling =====  
-function handlePost(text,file,textArea,fileInput){  
-  if(!text && !file) return;  
-  const id = Date.now();  
-  feedLoader.classList.remove("hidden"); profileLoader.classList.remove("hidden");  
-  
-  function savePostFinal(img){  
-    db.ref(`users/${user}`).get().then(s=>{  
-      const avatar = s.val().avatar||"";  
-      db.ref("posts/"+id).set({user,userAvatar:avatar,text,img,time:Date.now(),likes:{},comments:{}})  
-      .finally(()=>{  
-        textArea.value="";  
-        if(fileInput) fileInput.value="";  
-        feedLoader.classList.add("hidden"); profileLoader.classList.add("hidden");  
-      });  
-    });  
-  }  
-  
-  if(file){  
-    new Compressor(file,{quality:0.05,maxWidth:1024,maxHeight:1024,success(result){  
-      const reader = new FileReader();  
-      reader.onload = function(e){ savePostFinal(e.target.result); };  
-      reader.readAsDataURL(result);  
-    }});  
-  } else savePostFinal("");  
-}  
+	
+  function handlePost(text, file, textArea, fileInput) {
+  if (!text && !file) return; // لا يوجد نص ولا صورة → لا نفعل شيء
+
+  const id = Date.now(); // معرف مؤقت للمنشور
+  feedLoader.classList.remove("hidden");
+  profileLoader.classList.remove("hidden");
+
+  function savePostFinal(img) {
+    db.ref(`users/${user}`).get()
+      .then(snapshot => {
+        const avatar = snapshot.val()?.avatar || "";
+        db.ref("posts/" + id).set({
+          user,
+          userAvatar: avatar,
+          text,
+          img,
+          time: Date.now(),
+          likes: {},
+          comments: {}
+        }).finally(() => {
+          textArea.value = "";
+          if (fileInput) fileInput.value = "";
+          feedLoader.classList.add("hidden");
+          profileLoader.classList.add("hidden");
+        });
+      })
+      .catch(err => {
+        console.error("Erreur lors de la récupération des données utilisateur:", err);
+        feedLoader.classList.add("hidden");
+        profileLoader.classList.add("hidden");
+      });
+  }
+
+  if (file) {
+    // التحقق أن الملف صورة فقط عند الضغط على النشر
+    if (!file.type.startsWith("image/")) {
+      alert("Erreur : le fichier doit être une image !"); // رسالة بالفرنسية
+      if (fileInput) fileInput.value = ""; // إزالة الملف غير المقبول
+      feedLoader.classList.add("hidden");
+      profileLoader.classList.add("hidden");
+      return; // الخروج من الدالة، لن يتم تحميل الملف
+    }
+
+    new Compressor(file, {
+      quality: 0.07,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      success(result) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          savePostFinal(e.target.result); // حفظ الصورة بعد تحويلها لـ Base64
+        };
+        reader.readAsDataURL(result);
+      },
+      error(err) {
+        console.error("Erreur lors de la compression de l'image:", err);
+        alert("Erreur lors du traitement de l'image.");
+        feedLoader.classList.add("hidden");
+        profileLoader.classList.add("hidden");
+      }
+    });
+  } else {
+    savePostFinal(""); // إذا لا يوجد ملف، حفظ النص فقط
+  }
+}
   
 // ===== Render Post =====  
 function renderPost(d,id){  
