@@ -202,7 +202,7 @@ function handlePost(text,file,textArea,fileInput){
   }  
   
   if(file){  
-    new Compressor(file,{quality:0.08,maxWidth:1024,maxHeight:1024,success(result){  
+    new Compressor(file,{quality:0.05,maxWidth:1024,maxHeight:1024,success(result){  
       const reader = new FileReader();  
       reader.onload = function(e){ savePostFinal(e.target.result); };  
       reader.readAsDataURL(result);  
