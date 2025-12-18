@@ -443,5 +443,49 @@ if(savedUser){
   type="text/javascript"
   src="https://www.highperformanceformat.com/90e745df8b4e0b6a32d37aef2b9a5129/invoke.js"
 ></script>
+	<script>
+  // ===== UI Translation for 3 languages =====
+  const uiTexts = {
+    "Connexion / Inscription": { "en":"Login / Register", "ar":"تسجيل الدخول / التسجيل", "es":"Iniciar sesión / Registrarse" },
+    "Nom d'utilisateur": { "en":"Username", "ar":"اسم المستخدم", "es":"Usuario" },
+    "Mot de passe": { "en":"Password", "ar":"كلمة المرور", "es":"Contraseña" },
+    "Fil d'actualité": { "en":"Feed", "ar":"آخر الأخبار", "es":"Noticias" },
+    "Profil": { "en":"Profile", "ar":"الملف الشخصي", "es":"Perfil" },
+    "Amis": { "en":"Friends", "ar":"الأصدقاء", "es":"Amigos" },
+    "Chat": { "en":"Chat", "ar":"الدردشة", "es":"Chat" },
+    "Déconnexion": { "en":"Logout", "ar":"تسجيل الخروج", "es":"Cerrar sesión" },
+    "À quoi pensez-vous ?": { "en":"What's on your mind?", "ar":"بم تفكر؟", "es":"¿En qué piensas?" },
+    "Écrire une bio...": { "en":"Write a bio...", "ar":"اكتب نبذة عنك...", "es":"Escribe una biografía..." },
+    "Enregistrer": { "en":"Save", "ar":"حفظ", "es":"Guardar" },
+    "Rechercher...": { "en":"Search...", "ar":"ابحث...", "es":"Buscar..." },
+    "Choisir un ami": { "en":"Select a friend", "ar":"اختر صديق", "es":"Selecciona un amigo" },
+    "Écrire un message": { "en":"Write a message", "ar":"اكتب رسالة", "es":"Escribe un mensaje" },
+    "Envoyer": { "en":"Send", "ar":"إرسال", "es":"Enviar" },
+    "Supprimer": { "en":"Delete", "ar":"حذف", "es":"Eliminar" },
+    "Ajouter": { "en":"Add", "ar":"إضافة", "es":"Añadir" },
+    "Commenter": { "en":"Comment", "ar":"تعليق", "es":"Comentar" }
+  };
+
+  function translateUI() {
+    const lang = navigator.language.split('-')[0]; // en, ar, es
+    // إذا اللغة غير موجودة نرجع للإنجليزية
+    const language = ["en","ar","fr"].includes(lang) ? lang : "en";
+
+    document.querySelectorAll("[placeholder]").forEach(el => {
+      const key = el.getAttribute("placeholder");
+      if(uiTexts[key] && uiTexts[key][language]) el.setAttribute("placeholder", uiTexts[key][language]);
+    });
+
+    document.querySelectorAll("button").forEach(el => {
+      if(uiTexts[el.innerText] && uiTexts[el.innerText][language]) el.innerText = uiTexts[el.innerText][language];
+    });
+
+    document.querySelectorAll("h3, h4, option").forEach(el => {
+      if(uiTexts[el.innerText] && uiTexts[el.innerText][language]) el.innerText = uiTexts[el.innerText][language];
+    });
+  }
+
+  window.addEventListener("load", translateUI);
+</script>
 </body>  
 </html>
