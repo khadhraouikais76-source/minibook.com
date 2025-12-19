@@ -221,7 +221,7 @@ function logout(){ localStorage.removeItem("user"); location.reload(); }
   if (file) {
     // التحقق أن الملف صورة فقط عند الضغط على النشر
     if (!file.type.startsWith("image/")) {
-      alert("Erreur : le fichier doit être une image !"); // رسالة بالفرنسية
+      alert("Erreur : le fichier doit être une image !...يجب ان تكون صورة فقط...the file most bee photo"); // رسالة بالفرنسية
       if (fileInput) fileInput.value = ""; // إزالة الملف غير المقبول
       feedLoader.classList.add("hidden");
       profileLoader.classList.add("hidden");
