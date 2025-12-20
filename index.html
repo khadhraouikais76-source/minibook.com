@@ -113,7 +113,13 @@ firebase.initializeApp({
   apiKey:"AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",  
   databaseURL:"https://book-ee927-default-rtdb.firebaseio.com"  
 });  
-const db = firebase.database();  
+const db = firebase.database(); 
+	// ===== SIMPLE ALERT FUNCTION =====
+function showAlert(message){
+  setTimeout(()=>{
+    alert(message);
+  }, 300);
+}
   
 // ===== Global Variables =====  
 let user = null;  
@@ -167,11 +173,15 @@ function startApp(){
   loadProfile();  
   loadAllUsers();  
   loadChatFriends();  
+
   db.ref(`users/${user}`).get().then(s=>{  
     const data = s.val();  
     profilePic.src=data.avatar||"";  
     bio.value=data.bio||"";  
   });  
+	// تشغيل إشعارات إضافة صديق و الرسائل
+listenForFriendNotifications();
+listenForChatNotifications();
 }  
   
 // ===== Tab switch =====  
@@ -335,56 +345,149 @@ function uploadAvatar(input){
   }});  
 }  
   
-// ===== FRIENDS =====  
-function loadAllUsers(){  
-  friendsLoader.classList.remove("hidden");  
-  allUsers.innerHTML="";  
-  db.ref("users").get().then(s=>{  
-    const friendsList = [], othersList = [];  
-    const promises=[];  
-    s.forEach(u=>{  
-      if(u.key===user) return;  
-      promises.push(db.ref(`users/${user}/friends/${u.key}`).get().then(fSnap=>{  
-        const data = u.val();  
-        const avatarHTML = data.avatar ? `<img src="${data.avatar}" class="avatar">` : `<div class="avatar-placeholder" style="background:#6b46c1">${u.key[0].toUpperCase()}</div>`;  
-        const card = `<div class="user-card">${avatarHTML}<b>${u.key}</b><button onclick="${fSnap.exists()?'removeFriend':'addFriend'}('${u.key}')">${fSnap.exists()?'Supprimer':'Ajouter'}</button></div>`;  
-        if(fSnap.exists()){ friendsList.push(card); } else { othersList.push(card); }  
-      }));  
-    });  
-    Promise.all(promises).finally(()=>{  
-      let html = "";  
-      if(friendsList.length>0) html += `<h4>Amis</h4>` + friendsList.join("");  
-      if(othersList.length>0) html += `<h4>Autres utilisateurs</h4>` + othersList.join("");  
-      allUsers.innerHTML = html;  
-      friendsLoader.classList.add("hidden");  
-    });  
-  });  
-}  
-  
-function filterUsers(){  
-  const val = document.getElementById("searchUser").value.toLowerCase();  
-  Array.from(allUsers.children).forEach(u=>{  
-    u.style.display = u.querySelector("b") && u.querySelector("b").innerText.toLowerCase().includes(val) ? "" : "none";  
-  });  
-}  
-  
-function addFriend(f){   
-  db.ref(`users/${user}/friends/${f}`).set(true).then(()=>{   
-    loadAllUsers();   
-    loadChatFriends();   
-  });   
-}  
-  
-function removeFriend(f){   
-  db.ref(`users/${user}/friends/${f}`).remove().then(()=>{  
-    loadAllUsers();   
-    if(currentChatFriend===f) currentChatFriend=null;   
-    loadChat();   
-    loadChatFriends();   
-  });   
-}  
-  
-// ===== CHAT =====  
+// ===== FRIENDS =====
+
+function loadAllUsers(){
+  friendsLoader.classList.remove("hidden");
+  allUsers.innerHTML = "";
+
+  db.ref("users").get().then(s=>{
+    const friendsList = [];
+    const othersList = [];
+    const promises = [];
+
+    s.forEach(u=>{
+      if(u.key === user) return;
+
+      promises.push(
+        db.ref(`users/${user}/friends/${u.key}`).get().then(fSnap=>{
+          const data = u.val() || {};
+
+          const avatarHTML = data.avatar
+            ? `<img src="${data.avatar}" class="avatar">`
+            : `<div class="avatar-placeholder" style="background:#6b46c1">
+                ${u.key[0].toUpperCase()}
+               </div>`;
+
+          const isFriend = fSnap.exists();
+
+          const card = `
+            <div class="user-card">
+              ${avatarHTML}
+              <b>${u.key}</b>
+              <button onclick="${isFriend ? 'removeFriend' : 'addFriend'}('${u.key}')">
+                ${isFriend ? 'Supprimer' : 'Ajouter'}
+              </button>
+            </div>
+          `;
+
+          if(isFriend){
+            friendsList.push(card);
+          }else{
+            othersList.push(card);
+          }
+        })
+      );
+    });
+
+    Promise.all(promises).finally(()=>{
+      let html = "";
+      if(friendsList.length)
+        html += `<h4>Amis</h4>` + friendsList.join("");
+      if(othersList.length)
+        html += `<h4>Autres utilisateurs</h4>` + othersList.join("");
+
+      allUsers.innerHTML = html;
+      friendsLoader.classList.add("hidden");
+    });
+  });
+}
+
+
+// ===== SEARCH =====
+
+function filterUsers(){
+  const val = document.getElementById("searchUser").value.toLowerCase();
+
+  document.querySelectorAll("#allUsers h4").forEach(title=>{
+    let next = title.nextElementSibling;
+    let visible = false;
+
+    while(next && next.classList.contains("user-card")){
+      const name = next.querySelector("b").innerText.toLowerCase();
+      const show = name.includes(val);
+      next.style.display = show ? "" : "none";
+      if(show) visible = true;
+      next = next.nextElementSibling;
+    }
+
+    title.style.display = visible ? "" : "none";
+  });
+}
+
+
+// ===== ADD FRIEND (طرف واحد → للطرفين + إشعار) =====
+
+function addFriend(friend){
+  const updates = {};
+
+  // إضافة للطرفين
+  updates[`users/${user}/friends/${friend}`] = true;
+  updates[`users/${friend}/friends/${user}`] = true;
+
+  // إشعار للطرف الآخر فقط
+  const notifKey = db.ref(`users/${friend}/notifications`).push().key;
+  updates[`users/${friend}/notifications/${notifKey}`] = {
+    type: "friend_add",
+    from: user,
+    time: Date.now()
+  };
+
+  db.ref().update(updates).then(()=>{
+    loadAllUsers();
+    loadChatFriends();
+  });
+}
+
+
+// ===== REMOVE FRIEND (طرف واحد → للطرفين) =====
+
+function removeFriend(friend){
+  const updates = {};
+
+  updates[`users/${user}/friends/${friend}`] = null;
+  updates[`users/${friend}/friends/${user}`] = null;
+
+  db.ref().update(updates).then(()=>{
+    loadAllUsers();
+
+    if(currentChatFriend === friend){
+      currentChatFriend = null;
+      loadChat();
+    }
+
+    loadChatFriends();
+  });
+}
+
+	// ===== FRIEND ADD NOTIFICATIONS =====
+function listenForFriendNotifications(){
+  if(!user) return;
+
+  db.ref(`users/${user}/notifications`).on("child_added", snap=>{
+    const notif = snap.val();
+    if(!notif) return;
+
+    if(notif.type === "friend_add"){
+      showAlert("👤 " + notif.from + "  add you / vous ajouter/أضافك كصديق");
+    }
+
+    // حذف الإشعار بعد عرضه
+    snap.ref.remove();
+  });
+}
+	
+ //===== CHAT =====  
 function loadChatFriends(){  
   db.ref(`users/${user}/friends`).on("value",snap=>{  
     chatFriendSelect.innerHTML='<option value="">Choisir un ami</option>';  
@@ -421,8 +524,32 @@ function sendMessage(){
   const msgId = Date.now();  
   db.ref(`chats/${chatId}/${msgId}`).set({from:user,text,time:Date.now()});  
   chatInput.value="";  
+	// 🔔 إشعار رسالة للطرف الآخر
+const notifKey = db.ref(`users/${currentChatFriend}/notifications`).push().key;
+db.ref(`users/${currentChatFriend}/notifications/${notifKey}`).set({
+  type: "chat",
+  from: user,
+  time: Date.now()
+});
 }  
   
+	// ===== CHAT MESSAGE NOTIFICATIONS =====
+function listenForChatNotifications(){
+  if(!user) return;
+
+  db.ref(`users/${user}/notifications`).on("child_added", snap=>{
+    const notif = snap.val();
+    if(!notif) return;
+
+    if(notif.type === "chat"){
+      showAlert("💬 رسالة جديدة من /new message from/nouveau message apartir" + notif.from);
+    }
+
+    // حذف الإشعار بعد عرضه
+    snap.ref.remove();
+  });
+}
+	
 // ===== AUTO LOGIN IF LOCAL =====  
 const savedUser = localStorage.getItem("user");  
 if(savedUser){   
