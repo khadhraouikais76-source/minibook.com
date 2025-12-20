@@ -479,7 +479,7 @@ function listenForFriendNotifications(){
     if(!notif) return;
 
     if(notif.type === "friend_add"){
-      showAlert("👤 " + notif.from + "  add you / vous ajouter/أضافك كصديق");
+      showAlert("👤 " + notif.from + "  add you / vous ajouter / أضافك كصديق ");
     }
 
     // حذف الإشعار بعد عرضه
@@ -542,7 +542,7 @@ function listenForChatNotifications(){
     if(!notif) return;
 
     if(notif.type === "chat"){
-      showAlert("💬 رسالة جديدة من /new message from/nouveau message apartir" + notif.from);
+      showAlert("💬 رسالة جديدة من /new message from / nouveau message apartir " + notif.from);
     }
 
     // حذف الإشعار بعد عرضه
