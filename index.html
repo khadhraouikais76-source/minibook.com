@@ -58,6 +58,795 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
   type="text/javascript"
   src="https://www.highperformanceformat.com/90e745df8b4e0b6a32d37aef2b9a5129/invoke.js"
 ></script>
+	<!DOCTYPE html>  <html lang="fr">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1">  
+<title>MiniBook Pro</title>  
+<link rel="preconnect" href="https://fonts.googleapis.com">  
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">  
+<style>  
+*{box-sizing:border-box;}body{margin:0;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background:#f5f7fa;color:#333;}  
+.hidden{display:none !important;}  
+#auth,#app{width:100%;}  
+#auth{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea,#764ba2);}  
+#auth .box{max-width:400px;width:90%;padding:35px;border-radius:20px;background:#fff;box-shadow:0 15px 35px rgba(0,0,0,0.2);}  
+#auth h3{text-align:center;color:#6b46c1;font-size:28px;margin-bottom:25px;}  
+#auth input,#auth button{width:100%;padding:14px;margin-bottom:12px;font-size:16px;border-radius:8px;border:1px solid #ccc;}  
+#auth button.primary{background:#6b46c1;color:#fff;border:none;cursor:pointer;font-weight:bold;}  
+#authMsg{color:#e53e3e;text-align:center;margin-top:10px;font-weight:bold;}  
+.navbar{display:flex;gap:12px;padding:12px 20px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.1);position:sticky;top:0;z-index:10;border-radius:0 0 15px 15px;flex-wrap:wrap;}  
+.navbar button{padding:10px 18px;cursor:pointer;background:#f0f0f0;border:none;border-radius:10px;transition: all 0.3s ease;font-weight:bold;flex:1 1 auto;}  
+.navbar button:hover{background:#6b46c1;color:#fff;}  
+.container{max-width:950px;margin:auto;padding:25px;}  
+.box{background:#fff;padding:25px;border-radius:20px;margin-bottom:25px;box-shadow:0 10px 25px rgba(0,0,0,0.08);}  
+.avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;margin-right:12px;border:2px solid #6b46c1;}  
+.flex{display:flex;align-items:center;gap:12px;}  
+.post{border-bottom:1px solid #e0e0e0;padding:15px 0;position:relative;}  
+.post img{max-width:100%;border-radius:15px;margin-top:10px;}  
+.avatar-placeholder{width:45px;height:45px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;margin-right:10px;font-size:18px;}  
+.chat-container{max-height:320px;overflow-y:auto;border:1px solid #ddd;padding:12px;border-radius:15px;background:#f8f8f8;margin-bottom:12px;}  
+.chat-msg.me{text-align:right;margin:5px 0;background:#e9d8fd;padding:8px 12px;border-radius:15px;display:inline-block;}  
+.chat-msg.friend{text-align:left;margin:5px 0;background:#d0ebff;padding:8px 12px;border-radius:15px;display:inline-block;}  
+.emoji-btn{cursor:pointer;margin-right:6px;transition: transform 0.2s ease;}  
+.emoji-btn:hover{transform:scale(1.2);}  
+.comment input{width:70%;margin-right:5px;padding:8px;border-radius:10px;border:1px solid #ccc;}  
+.user-card{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:8px 0;border-bottom:1px solid #eee;}  
+.user-card button{padding:6px 12px;border:none;border-radius:10px;cursor:pointer;background:#6b46c1;color:#fff;transition:background 0.3s ease;}  
+.user-card button:hover{background:#553c9a;}  
+textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-family:inherit;}  
+.delete-btn{position:absolute;top:10px;right:10px;background:#e53e3e;color:#fff;border:none;padding:5px 10px;border-radius:8px;cursor:pointer;}  
+.delete-btn:hover{background:#c53030;}  
+.loader{border:6px solid #f3f3f3;border-top:6px solid #6b46c1;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:20px auto;}  
+@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}  
+@media(max-width:768px){.container{margin:15px;padding:15px;}.navbar button{font-size:15px;}}  
+@media(max-width:480px){#auth h3{font-size:24px;} input,textarea,button.primary{font-size:14px;padding:12px;}}  
+</style>  
+</head>  
+<body> 
+  <script type="text/javascript">
+  atOptions = {
+  	'key' : '90e745df8b4e0b6a32d37aef2b9a5129',
+  	'format' : 'iframe',
+  	'height' : 50,
+  	'width' : 320,
+  	'params' : {}
+  };
+</script>
+<script
+  type="text/javascript"
+  src="https://www.highperformanceformat.com/90e745df8b4e0b6a32d37aef2b9a5129/invoke.js"
+></script>
+	window.posting = false;
+	// ===== PASSWORD HASHING (SHA-256) =====
+async function hashPassword(password){
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+  <!-- ===== AUTH ===== -->  
+  <div id="auth" class="container">  
+  <div class="box">  
+    <h3>Connexion / Inscription</h3>  
+    <input id="username" placeholder="Nom d'utilisateur">  
+    <input id="password" type="password" placeholder="Mot de passe">  
+    <button class="primary" onclick="login()">Connexion / Inscription</button>  
+    <p id="authMsg"></p>  
+  </div>  
+</div>  <!-- ===== NAVBAR ===== -->  <div id="navbar" class="navbar hidden">  
+  <button onclick="openTab('feed')">Fil d'actualité</button>  
+  <button onclick="openTab('profile')">Profil</button>  
+  <button onclick="openTab('friends')">Amis</button>  
+  <button onclick="openTab('chat')">Chat</button>  
+  <button onclick="logout()">Déconnexion</button>  
+</div>  <!-- ===== APP ===== -->  <div id="app" class="container hidden">  
+  <div id="feed" class="box">  
+    <textarea id="postText" placeholder="À quoi pensez-vous ?"></textarea>  
+    <input type="file" id="postImage" accept="image/*">  
+    <button class="primary" onclick="handlePost(postText.value, postImage.files[0], postText, postImage)">Publier</button>  
+    <div id="allPosts" style="min-height:50px; overflow-y:auto; max-height:500px;"></div>  
+    <div id="feedLoader" class="loader hidden"></div>  
+  </div>    <div id="profile" class="box hidden">  
+    <div class="flex">  
+      <img id="profilePic" class="avatar" src="">  
+      <input type="file" accept="image/*" onchange="uploadAvatar(this)">  
+    </div>  
+    <textarea id="bio" placeholder="Écrire une bio..."></textarea>  
+    <button class="primary" onclick="saveBio()">Enregistrer</button>  
+    <textarea id="profilePostText" placeholder="À quoi pensez-vous ?"></textarea>  
+    <input type="file" id="profilePostImage" accept="image/*">  
+    <button class="primary" onclick="handlePost(profilePostText.value, profilePostImage.files[0], profilePostText, profilePostImage)">Publier</button>  
+    <div id="myPosts" style="min-height:50px; overflow-y:auto; max-height:500px;"></div>  
+    <div id="profileLoader" class="loader hidden"></div>  
+  </div>    <div id="friends" class="box hidden">  
+    <h3>Amis et utilisateurs</h3>  
+    <input type="text" id="searchUser" placeholder="Rechercher..." onkeyup="filterUsers()">  
+    <div id="allUsers"></div>  
+    <div id="friendsLoader" class="loader hidden"></div>  
+  </div>    <div id="chat" class="box hidden">  
+    <h3>Chat avec les amis</h3>  
+    <select id="chatFriendSelect" onchange="loadChat()">  
+      <option value="">Choisir un ami</option>  
+    </select>  
+    <div id="chatContainer" class="chat-container"></div>  
+    <textarea id="chatInput" placeholder="Écrire un message"></textarea>  
+    <button class="primary" onclick="sendMessage()">Envoyer</button>  
+    <div id="chatLoader" class="loader hidden"></div>  
+  </div>  
+</div>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.1.1/compressor.min.js"></script>  <script>  
+// ===== Firebase Initialization =====  
+firebase.initializeApp({  
+  apiKey:"AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",  
+  databaseURL:"https://book-ee927-default-rtdb.firebaseio.com"  
+});  
+const db = firebase.database(); 
+	// ===== SIMPLE ALERT FUNCTION =====
+function showAlert(message){
+  setTimeout(()=>{
+    alert(message);
+  }, 300);
+}
+  // ===== PERFORMANCE & CLEAN SETTINGS =====
+const POSTS_LIMIT = 20;   // عدد البوستات في كل تحميل
+const MAX_POSTS   = 100;  // أقصى عدد بوستات مسموح به في القاعدة
+
+let lastPostKey = null;
+let loadingFeed = false;
+// ===== Global Variables =====  
+let user = null;  
+let feedCache = [], profileCache = [];  
+let currentChatFriend = null;  
+  
+// ===== DOM Elements =====  
+const auth = document.getElementById("auth");  
+const navbar = document.getElementById("navbar");  
+const app = document.getElementById("app");  
+const usernameInput = document.getElementById("username");  
+const passwordInput = document.getElementById("password");  
+const authMsg = document.getElementById("authMsg");  
+const allPosts = document.getElementById("allPosts");  
+const myPosts = document.getElementById("myPosts");  
+const profilePic = document.getElementById("profilePic");  
+const bio = document.getElementById("bio");  
+const feedLoader = document.getElementById("feedLoader");  
+const profileLoader = document.getElementById("profileLoader");  
+const friendsLoader = document.getElementById("friendsLoader");  
+const allUsers = document.getElementById("allUsers");  
+const chatFriendSelect = document.getElementById("chatFriendSelect");  
+const chatContainer = document.getElementById("chatContainer");  
+const chatInput = document.getElementById("chatInput");  
+const chatLoader = document.getElementById("chatLoader");  
+  
+// ===== LOGIN / REGISTER =====  // ===== LOGIN / REGISTER (SECURE + COMPATIBLE) =====
+async function login(){
+  const u = usernameInput.value.trim();
+  const p = passwordInput.value.trim();
+
+  if(!u || !p){
+    authMsg.innerText = "Entrez tout";
+    return;
+  }
+
+  const userRef = db.ref("users/" + u);
+  const snap = await userRef.get();
+
+  // ===== REGISTER =====
+  if(!snap.exists()){
+    const hashed = await hashPassword(p);
+
+    await userRef.set({
+      passHash: hashed,   // 🔐 جديد
+      bio: "",
+      avatar: "",
+      friends: {}
+    });
+
+    user = u;
+    localStorage.setItem("user", user);
+    startApp();
+    return;
+  }
+
+  const data = snap.val();
+
+  // ===== OLD USER (PLAIN PASSWORD) =====
+  if(data.pass){
+    if(data.pass !== p){
+      authMsg.innerText = "Mot de passe incorrect";
+      return;
+    }
+
+    // 🔄 ترقية الحساب تلقائيًا
+    const newHash = await hashPassword(p);
+
+    await userRef.update({
+      passHash: newHash
+    });
+
+    await userRef.child("pass").remove(); // ❌ حذف النص الصريح
+
+    user = u;
+    localStorage.setItem("user", user);
+    startApp();
+    return;
+  }
+
+  // ===== NEW USER (HASHED PASSWORD) =====
+  if(data.passHash){
+    const hashedInput = await hashPassword(p);
+
+    if(hashedInput !== data.passHash){
+      authMsg.innerText = "Mot de passe incorrect";
+      return;
+    }
+
+    user = u;
+    localStorage.setItem("user", user);
+    startApp();
+    return;
+  }
+
+  authMsg.innerText = "Erreur de compte";
+}
+  
+// ===== START APP =====  
+function startApp(){  
+  auth.classList.add("hidden");  
+  navbar.classList.remove("hidden");  
+  app.classList.remove("hidden");  
+  openTab('feed');  
+  loadFeed();  
+  loadProfile();  
+  loadAllUsers();  
+  loadChatFriends();  
+
+  db.ref(`users/${user}`).get().then(s=>{  
+    const data = s.val();  
+    profilePic.src=data.avatar||"";  
+    bio.value=data.bio||"";  
+  });  
+	// تشغيل إشعارات إضافة صديق و الرسائل
+listenForFriendNotifications();
+listenForChatNotifications();
+}  
+  
+// ===== Tab switch =====  
+function openTab(id){  
+  ['feed','profile','friends','chat'].forEach(t=>document.getElementById(t).classList.add('hidden'));  
+  document.getElementById(id).classList.remove('hidden');  
+}  
+  
+// ===== Logout =====  
+function logout(){ localStorage.removeItem("user"); location.reload(); }  
+  
+// ===== Post Handling =====  
+	
+
+  
+  function handlePost(text, file, textArea, fileInput) {
+	   
+
+  // ===== منع الضغط المكرر =====
+  if (window.posting) return;
+  window.posting = true;
+
+  feedLoader.classList.remove("hidden");
+  if (!text && !file) return; // لا يوجد نص ولا صورة → لا نفعل شيء
+
+  const id = Date.now(); // معرف مؤقت للمنشور
+  feedLoader.classList.remove("hidden");
+  profileLoader.classList.remove("hidden");
+
+  function savePostFinal(img) {
+    db.ref(`users/${user}`).get()
+      .then(snapshot => {
+        const avatar = snapshot.val()?.avatar || "";
+        db.ref("posts/" + id).set({
+          user,
+          userAvatar: avatar,
+          text,
+          img,
+          time: Date.now(),
+          likes: {},
+          comments: {}
+        }).finally(() => {
+          textArea.value = "";
+          if (fileInput) fileInput.value = "";
+          feedLoader.classList.add("hidden");
+          profileLoader.classList.add("hidden");
+        });
+      })
+      .catch(err => {
+        console.error("Erreur lors de la récupération des données utilisateur:", err);
+        feedLoader.classList.add("hidden");
+        profileLoader.classList.add("hidden");
+      });
+	  autoCleanPosts(); // 🧹 تنظيف تلقائي
+  }
+
+  if (file) {
+    // التحقق أن الملف صورة فقط عند الضغط على النشر
+    if (!file.type.startsWith("image/")) {
+      alert("Erreur : le fichier doit être une image !...يجب ان تكون صورة فقط...the file most bee photo"); // رسالة بالفرنسية
+      if (fileInput) fileInput.value = ""; // إزالة الملف غير المقبول
+      feedLoader.classList.add("hidden");
+      profileLoader.classList.add("hidden");
+      return; // الخروج من الدالة، لن يتم تحميل الملف
+    }
+
+    new Compressor(file, {
+      quality: 0.07,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      success(result) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          savePostFinal(e.target.result); // حفظ الصورة بعد تحويلها لـ Base64
+        };
+        reader.readAsDataURL(result);
+      },
+      error(err) {
+        console.error("Erreur lors de la compression de l'image:", err);
+        alert("Erreur lors du traitement de l'image.");
+        feedLoader.classList.add("hidden");
+        profileLoader.classList.add("hidden");
+      }
+    });
+  } else {
+    savePostFinal(""); // إذا لا يوجد ملف، حفظ النص فقط
+  }
+}
+  // ===== AUTO DELETE OLD POSTS =====
+function autoCleanPosts(){
+  db.ref("posts")
+    .orderByChild("time")
+    .once("value")
+    .then(snap=>{
+      const posts = [];
+
+      snap.forEach(p=>{
+        posts.push({
+          key: p.key,
+          time: p.val().time
+        });
+      });
+
+      // إذا العدد عادي لا نحذف
+      if(posts.length <= MAX_POSTS) return;
+
+      // ترتيب من الأقدم للأحدث
+      posts.sort((a,b)=>a.time - b.time);
+
+      const toDelete = posts.length - MAX_POSTS;
+
+      for(let i=0; i<toDelete; i++){
+        db.ref("posts/" + posts[i].key).remove();
+      }
+    });
+}
+// ===== Render Post =====  
+function renderPost(d,id){  
+  let likes = Object.values(d.likes||{}).join(" ");  
+  let commentsHtml = "";  
+  if(d.comments){ for(const c in d.comments){ commentsHtml += `<div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>`; } }  
+  let avatarHTML = d.userAvatar ? `<img src="${d.userAvatar}" class="avatar">` : `<div class="avatar-placeholder" style="background:#6b46c1">${d.user[0].toUpperCase()}</div>`;  
+  let deleteBtn = d.user===user ? `<button class="delete-btn" onclick="deletePost('${id}')">Supprimer</button>` : '';  
+  return `<div class="post">  
+    <div class="flex">${avatarHTML}<b>${d.user}</b></div>  
+    <p>${d.text||""}</p>  
+    ${d.img?`<img src="${d.img}" loading="lazy">`:''}  
+    ${deleteBtn}  
+    <div class="small">${new Date(d.time).toLocaleString()}</div>  
+    <div><span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span><span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span><span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span><span>${likes}</span></div>  
+    <div class="comment">${commentsHtml}<input placeholder="Écrire un commentaire..." id="c${id}"><button onclick="addComment('${id}')">Commenter</button></div>  
+  </div>`;  
+}  
+  // ===== LOAD FEED =====  
+// ===== LOAD FEED (FAST) =====
+function loadFeed(){
+  if(loadingFeed) return;
+  loadingFeed = true;
+
+  feedLoader.classList.remove("hidden");
+
+  db.ref("posts")
+    .orderByChild("time")
+    .limitToLast(POSTS_LIMIT)
+    .once("value")
+    .then(snap=>{
+      const posts = [];
+
+      snap.forEach(p=>{
+        posts.push({ key:p.key, val:p.val() });
+      });
+
+      posts.sort((a,b)=>b.val.time - a.val.time);
+
+      allPosts.innerHTML = "";
+      posts.forEach(p=>{
+        allPosts.innerHTML += renderPost(p.val, p.key);
+      });
+
+      lastPostKey = posts[posts.length - 1]?.key || null;
+
+      feedLoader.classList.add("hidden");
+      loadingFeed = false;
+    });
+	// ===== INFINITE SCROLL =====
+allPosts.addEventListener("scroll", ()=>{
+  if(
+    allPosts.scrollTop + allPosts.clientHeight >=
+    allPosts.scrollHeight - 60
+  ){
+    loadMorePosts();
+  }
+});
+}
+  // ===== LOAD MORE POSTS =====
+function loadMorePosts(){
+  if(!lastPostKey || loadingFeed) return;
+  loadingFeed = true;
+
+  feedLoader.classList.remove("hidden");
+
+  db.ref("posts")
+    .orderByKey()
+    .endBefore(lastPostKey)
+    .limitToLast(POSTS_LIMIT)
+    .once("value")
+    .then(snap=>{
+      const posts = [];
+
+      snap.forEach(p=>{
+        posts.push({ key:p.key, val:p.val() });
+      });
+
+      posts.sort((a,b)=>b.val.time - a.val.time);
+
+      posts.forEach(p=>{
+        allPosts.innerHTML += renderPost(p.val, p.key);
+      });
+
+      lastPostKey = posts[posts.length - 1]?.key || null;
+
+      feedLoader.classList.add("hidden");
+      loadingFeed = false;
+    });
+}
+// ===== LOAD PROFILE POSTS =====  
+function loadProfile(){  
+  profileLoader.classList.remove("hidden");  
+  db.ref("posts").on("value",snap=>{  
+    profileCache=[];  
+    snap.forEach(p=>{ if(p.val().user===user) profileCache.push({key:p.key,val:p.val()}); });  
+    profileCache.sort((a,b)=>b.val.time-a.val.time);  
+    myPosts.innerHTML="";  
+    profileCache.forEach(p=>{ myPosts.innerHTML += renderPost(p.val,p.key); });  
+    profileLoader.classList.add("hidden");  
+  });  
+	
+}  
+  
+// ===== LIKE / COMMENT / DELETE =====  
+function deletePost(id){ db.ref("posts/"+id).remove(); }  
+  
+function toggleLike(postId,emoji){  
+  db.ref(`posts/${postId}/likes/${user}`).get().then(s=>{  
+    if(s.exists() && s.val()===emoji){ db.ref(`posts/${postId}/likes/${user}`).remove(); }  
+    else db.ref(`posts/${postId}/likes/${user}`).set(emoji);  
+  });  
+}  
+  
+function addComment(postId){  
+  const input=document.getElementById("c"+postId);  
+  const text=input.value.trim();  
+  if(!text) return;  
+  const commentId=Date.now();  
+  db.ref(`posts/${postId}/comments/${commentId}`).set({user,text});  
+  input.value="";  
+}  
+  
+// ===== BIO / AVATAR =====  
+function saveBio(){ db.ref(`users/${user}/bio`).set(bio.value); }  
+  
+function uploadAvatar(input){  
+  const file=input.files[0]; if(!file) return;  
+  profileLoader.classList.remove("hidden");  
+  new Compressor(file,{quality:0.05,maxWidth:1024,maxHeight:1024,success(result){  
+    const reader=new FileReader();  
+    reader.onload=function(e){  
+      const url=e.target.result;   
+      db.ref(`users/${user}/avatar`).set(url).then(()=>{  
+        profilePic.src=url; // تحديث الصورة المدورة  
+        // تحديث كل المنشورات القديمة  
+        db.ref("posts").get().then(s=>{  
+          s.forEach(p=>{ if(p.val().user===user) db.ref(`posts/${p.key}/userAvatar`).set(url); });  
+        }).finally(()=>profileLoader.classList.add("hidden"));  
+      });  
+    };   
+    reader.readAsDataURL(result);  
+  }});  
+}  
+  
+// ===== FRIENDS =====
+
+function loadAllUsers(){
+  friendsLoader.classList.remove("hidden");
+  allUsers.innerHTML = "";
+
+  db.ref("users").get().then(s=>{
+    const friendsList = [];
+    const othersList = [];
+    const promises = [];
+
+    s.forEach(u=>{
+      if(u.key === user) return;
+
+      promises.push(
+        db.ref(`users/${user}/friends/${u.key}`).get().then(fSnap=>{
+          const data = u.val() || {};
+
+          const avatarHTML = data.avatar
+            ? `<img src="${data.avatar}" class="avatar">`
+            : `<div class="avatar-placeholder" style="background:#6b46c1">
+                ${u.key[0].toUpperCase()}
+               </div>`;
+
+          const isFriend = fSnap.exists();
+
+          const card = `
+            <div class="user-card">
+              ${avatarHTML}
+              <b>${u.key}</b>
+              <button onclick="${isFriend ? 'removeFriend' : 'addFriend'}('${u.key}')">
+                ${isFriend ? 'Supprimer' : 'Ajouter'}
+              </button>
+            </div>
+          `;
+
+          if(isFriend){
+            friendsList.push(card);
+          }else{
+            othersList.push(card);
+          }
+        })
+      );
+    });
+
+    Promise.all(promises).finally(()=>{
+      let html = "";
+      if(friendsList.length)
+        html += `<h4>Amis</h4>` + friendsList.join("");
+      if(othersList.length)
+        html += `<h4>Autres utilisateurs</h4>` + othersList.join("");
+
+      allUsers.innerHTML = html;
+      friendsLoader.classList.add("hidden");
+    });
+  });
+}
+
+
+// ===== SEARCH =====
+
+function filterUsers(){
+  const val = document.getElementById("searchUser").value.toLowerCase();
+
+  document.querySelectorAll("#allUsers h4").forEach(title=>{
+    let next = title.nextElementSibling;
+    let visible = false;
+
+    while(next && next.classList.contains("user-card")){
+      const name = next.querySelector("b").innerText.toLowerCase();
+      const show = name.includes(val);
+      next.style.display = show ? "" : "none";
+      if(show) visible = true;
+      next = next.nextElementSibling;
+    }
+
+    title.style.display = visible ? "" : "none";
+  });
+}
+
+
+// ===== ADD FRIEND (طرف واحد → للطرفين + إشعار) =====
+
+function addFriend(friend){
+  const updates = {};
+
+  // إضافة للطرفين
+  updates[`users/${user}/friends/${friend}`] = true;
+  updates[`users/${friend}/friends/${user}`] = true;
+
+  // إشعار للطرف الآخر فقط
+  const notifKey = db.ref(`users/${friend}/notifications`).push().key;
+  updates[`users/${friend}/notifications/${notifKey}`] = {
+    type: "friend_add",
+    from: user,
+    time: Date.now()
+  };
+
+  db.ref().update(updates).then(()=>{
+    loadAllUsers();
+    loadChatFriends();
+  });
+}
+
+
+// ===== REMOVE FRIEND (طرف واحد → للطرفين) =====
+
+function removeFriend(friend){
+  const updates = {};
+
+  updates[`users/${user}/friends/${friend}`] = null;
+  updates[`users/${friend}/friends/${user}`] = null;
+
+  db.ref().update(updates).then(()=>{
+    loadAllUsers();
+
+    if(currentChatFriend === friend){
+      currentChatFriend = null;
+      loadChat();
+    }
+
+    loadChatFriends();
+  });
+}
+
+	// ===== FRIEND ADD NOTIFICATIONS =====
+function listenForFriendNotifications(){
+  if(!user) return;
+
+  db.ref(`users/${user}/notifications`).on("child_added", snap=>{
+    const notif = snap.val();
+    if(!notif) return;
+
+    if(notif.type === "friend_add"){
+      showAlert("👤 " + notif.from + "  add you / vous ajouter / أضافك كصديق ");
+    }
+
+    // حذف الإشعار بعد عرضه
+    snap.ref.remove();
+  });
+}
+	
+ //===== CHAT =====  
+function loadChatFriends(){  
+  db.ref(`users/${user}/friends`).on("value",snap=>{  
+    chatFriendSelect.innerHTML='<option value="">Choisir un ami</option>';  
+    if(!snap.exists()) return;  
+    Object.keys(snap.val()).forEach(f=>{  
+      chatFriendSelect.innerHTML += `<option value="${f}">${f}</option>`;  
+    });  
+  });  
+}  
+  
+function loadChat(){  
+  currentChatFriend = chatFriendSelect.value;  
+  chatContainer.innerHTML = "";  
+  if(!currentChatFriend){ chatLoader.classList.add("hidden"); return; }  
+  chatLoader.classList.remove("hidden");  
+  const chatId = [user,currentChatFriend].sort().join("_");  
+  db.ref(`chats/${chatId}`).off();  
+  db.ref(`chats/${chatId}`).on("value",snap=>{  
+    chatContainer.innerHTML="";  
+    snap.forEach(msg=>{  
+      const m = msg.val();  
+      const cls = m.from===user?"me":"friend";  
+      chatContainer.innerHTML += `<div class="chat-msg ${cls}"><b>${m.from}:</b> ${m.text}</div>`;  
+    });  
+    chatContainer.scrollTop = chatContainer.scrollHeight;  
+    chatLoader.classList.add("hidden");  
+  });  
+}  
+  
+function sendMessage(){  
+  const text = chatInput.value.trim();  
+  if(!text || !currentChatFriend) return;  
+  const chatId = [user,currentChatFriend].sort().join("_");  
+  const msgId = Date.now();  
+  db.ref(`chats/${chatId}/${msgId}`).set({from:user,text,time:Date.now()});  
+  chatInput.value="";  
+	// 🔔 إشعار رسالة للطرف الآخر
+const notifKey = db.ref(`users/${currentChatFriend}/notifications`).push().key;
+db.ref(`users/${currentChatFriend}/notifications/${notifKey}`).set({
+  type: "chat",
+  from: user,
+  time: Date.now()
+});
+}  
+  
+	// ===== CHAT MESSAGE NOTIFICATIONS =====
+function listenForChatNotifications(){
+  if(!user) return;
+
+  db.ref(`users/${user}/notifications`).on("child_added", snap=>{
+    const notif = snap.val();
+    if(!notif) return;
+
+    if(notif.type === "chat"){
+      showAlert("💬 رسالة جديدة من /new message from / nouveau message apartir " + notif.from);
+    }
+
+    // حذف الإشعار بعد عرضه
+    snap.ref.remove();
+  });
+}
+	
+// ===== AUTO LOGIN IF LOCAL =====  
+const savedUser = localStorage.getItem("user");  
+if(savedUser){   
+  user=savedUser;   
+  startApp();   
+}  
+  </script>  
+  
+	<script>
+  // ===== UI Translation for 3 languages =====
+  const uiTexts = {
+    "Connexion / Inscription": { "en":"Login / Register", "ar":"تسجيل الدخول / التسجيل", "es":"Iniciar sesión / Registrarse" },
+    "Nom d'utilisateur": { "en":"Username", "ar":"اسم المستخدم", "es":"Usuario" },
+    "Mot de passe": { "en":"Password", "ar":"كلمة المرور", "es":"Contraseña" },
+    "Fil d'actualité": { "en":"Feed", "ar":"آخر الأخبار", "es":"Noticias" },
+    "Profil": { "en":"Profile", "ar":"الملف الشخصي", "es":"Perfil" },
+    "Amis": { "en":"Friends", "ar":"الأصدقاء", "es":"Amigos" },
+    "Chat": { "en":"Chat", "ar":"الدردشة", "es":"Chat" },
+    "Déconnexion": { "en":"Logout", "ar":"تسجيل الخروج", "es":"Cerrar sesión" },
+    "À quoi pensez-vous ?": { "en":"What's on your mind?", "ar":"بم تفكر؟", "es":"¿En qué piensas?" },
+    "Écrire une bio...": { "en":"Write a bio...", "ar":"اكتب نبذة عنك...", "es":"Escribe una biografía..." },
+    "Enregistrer": { "en":"Save", "ar":"حفظ", "es":"Guardar" },
+    "Rechercher...": { "en":"Search...", "ar":"ابحث...", "es":"Buscar..." },
+    "Choisir un ami": { "en":"Select a friend", "ar":"اختر صديق", "es":"Selecciona un amigo" },
+    "Écrire un message": { "en":"Write a message", "ar":"اكتب رسالة", "es":"Escribe un mensaje" },
+    "Envoyer": { "en":"Send", "ar":"إرسال", "es":"Enviar" },
+    "Supprimer": { "en":"Delete", "ar":"حذف", "es":"Eliminar" },
+    "Ajouter": { "en":"Add", "ar":"إضافة", "es":"Añadir" },
+    "Commenter": { "en":"Comment", "ar":"تعليق", "es":"Comentar" },
+  	"Publier": { "en":"Publish", "ar":"نشر", "es":"Comentar" },
+  	"Écrire un commentaire": { "en":"Write comment", "ar":"إكتب تعليق", "es":"Comentar" },
+  	"Amis et utilisateurs": { "en":"Frends", "ar":"أصدقاء", "es":"Comentar" },
+  	"Autres utilisateurs": { "en":"Other users", "ar":"مستخدمون ٱخرون", "es":"Comentar" },
+"Chat avec les amis": { "en":"Chat with frends", "ar":"راسل الاصدقاء", "es":"Comentarh" },
+ "Choisir un ami": { "en":"Use frend", "ar":"اختار صديق", "es":"Comentary" },
+  	 "Amis": { "en":"Frends", "ar":"أصدقاء", "es":"Comentary" }
+  
+  };
+  
+
+  function translateUI() {
+    const lang = navigator.language.split('-')[0]; // en, ar, es
+    // إذا اللغة غير موجودة نرجع للإنجليزية
+    const language = ["en","ar","fr"].includes(lang) ? lang : "en";
+
+    document.querySelectorAll("[placeholder]").forEach(el => {
+      const key = el.getAttribute("placeholder");
+      if(uiTexts[key] && uiTexts[key][language]) el.setAttribute("placeholder", uiTexts[key][language]);
+    });
+
+    document.querySelectorAll("button").forEach(el => {
+      if(uiTexts[el.innerText] && uiTexts[el.innerText][language]) el.innerText = uiTexts[el.innerText][language];
+    });
+
+    document.querySelectorAll("h3, h4, option").forEach(el => {
+      if(uiTexts[el.innerText] && uiTexts[el.innerText][language]) el.innerText = uiTexts[el.innerText][language];
+    });
+  }
+
+  window.addEventListener("load", translateUI);
+</script>
+	<script
+  async="async"
+  data-cfasync="false"
+  src="https://pl28271657.effectivegatecpm.com/7ce278eca43002f8c43475716f0e33ac/invoke.js"
+></script>
+<div id="container-7ce278eca43002f8c43475716f0e33ac"></div>
+<script src="https://pl28271677.effectivegatecpm.com/80/ad/57/80ad5725e11d3a76d1393f090a382411.js"></script>
+</body>  
+</html>
   <!-- ===== AUTH ===== -->  
   <div id="auth" class="container">  
   <div class="box">  
