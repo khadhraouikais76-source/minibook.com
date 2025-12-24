@@ -121,6 +121,10 @@ function showAlert(message){
   }, 300);
 }
   
+// ===== Global Variables =====  
+let user = null;  
+let feedCache = [], profileCache = [];  
+let currentChatFriend = null;  
   
 // ===== DOM Elements =====  
 const auth = document.getElementById("auth");  
@@ -267,7 +271,7 @@ function renderPost(d,id){
   return `<div class="post">  
     <div class="flex">${avatarHTML}<b>${d.user}</b></div>  
     <p>${d.text||""}</p>  
-    ${d.img?`<img src="${post.image}">`:''}  
+    ${d.img?`<img src="${d.img}">`:''}  
     ${deleteBtn}  
     <div class="small">${new Date(d.time).toLocaleString()}</div>  
     <div><span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span><span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span><span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span><span>${likes}</span></div>  
@@ -322,78 +326,24 @@ function addComment(postId){
 // ===== BIO / AVATAR =====  
 function saveBio(){ db.ref(`users/${user}/bio`).set(bio.value); }  
   
-function uploadAvatar(input){
-  const file = input.files[0];
-  if(!file) return;
-
-  // إظهار اللودر
-  profileLoader.classList.remove("hidden");
-
-  // تأكد أن الملف صورة
-  if(!file.type.startsWith("image/")){
-    alert("الملف يجب أن يكون صورة فقط");
-    input.value = "";
-    profileLoader.classList.add("hidden");
-    return;
-  }
-
-  try{
-    new Compressor(file, {
-      quality: 0.06,
-      maxWidth: 800,
-      maxHeight: 800,
-
-      success(result){
-        const reader = new FileReader();
-
-        reader.onload = function(e){
-          const url = e.target.result;
-
-          // حفظ الصورة
-          db.ref(`users/${user}/avatar`).set(url)
-            .then(()=>{
-              profilePic.src = url;
-
-              // تحديث صورة المستخدم في منشوراته القديمة
-              return db.ref("posts").get();
-            })
-            .then(snap=>{
-              snap.forEach(p=>{
-                if(p.val().user === user){
-                  db.ref(`posts/${p.key}/userAvatar`).set(url);
-                }
-              });
-            })
-            .catch(err=>{
-              console.error(err);
-              alert("حدث خطأ أثناء الحفظ");
-            })
-            .finally(()=>{
-              profileLoader.classList.add("hidden");
-              input.value = "";
-            });
-        };
-
-        reader.onerror = function(){
-          alert("فشل قراءة الصورة");
-          profileLoader.classList.add("hidden");
-        };
-
-        reader.readAsDataURL(result);
-      },
-
-      error(err){
-        console.error(err);
-        alert("فشل ضغط الصورة");
-        profileLoader.classList.add("hidden");
-      }
-    });
-  }catch(e){
-    console.error(e);
-    alert("خطأ غير متوقع");
-    profileLoader.classList.add("hidden");
-  }
-}
+function uploadAvatar(input){  
+  const file=input.files[0]; if(!file) return;  
+  profileLoader.classList.remove("hidden");  
+  new Compressor(file,{quality:0.05,maxWidth:1024,maxHeight:1024,success(result){  
+    const reader=new FileReader();  
+    reader.onload=function(e){  
+      const url=e.target.result;   
+      db.ref(`users/${user}/avatar`).set(url).then(()=>{  
+        profilePic.src=url; // تحديث الصورة المدورة  
+        // تحديث كل المنشورات القديمة  
+        db.ref("posts").get().then(s=>{  
+          s.forEach(p=>{ if(p.val().user===user) db.ref(`posts/${p.key}/userAvatar`).set(url); });  
+        }).finally(()=>profileLoader.classList.add("hidden"));  
+      });  
+    };   
+    reader.readAsDataURL(result);  
+  }});  
+}  
   
 // ===== FRIENDS =====
 
