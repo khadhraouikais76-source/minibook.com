@@ -323,27 +323,65 @@ function addComment(postId){
   input.value="";  
 }  
   
-// ===== BIO / AVATAR =====  
-function saveBio(){ db.ref(`users/${user}/bio`).set(bio.value); }  
-  
-function uploadAvatar(input){  
-  const file=input.files[0]; if(!file) return;  
-  profileLoader.classList.remove("hidden");  
-  new Compressor(file,{quality:0.05,maxWidth:1024,maxHeight:1024,success(result){  
-    const reader=new FileReader();  
-    reader.onload=function(e){  
-      const url=e.target.result;   
-      db.ref(`users/${user}/avatar`).set(url).then(()=>{  
-        profilePic.src=url; // تحديث الصورة المدورة  
-        // تحديث كل المنشورات القديمة  
-        db.ref("posts").get().then(s=>{  
-          s.forEach(p=>{ if(p.val().user===user) db.ref(`posts/${p.key}/userAvatar`).set(url); });  
-        }).finally(()=>profileLoader.classList.add("hidden"));  
-      });  
-    };   
-    reader.readAsDataURL(result);  
-  }});  
-}  
+// // ===== BIO / AVATAR =====
+
+function saveBio(){
+  // حفظ النبذة فقط (خفيف وسريع)
+  return db.ref(`users/${user}/bio`).set(bio.value);
+}
+
+function uploadAvatar(input){
+  const file = input.files[0];
+  if(!file) return;
+
+  // إظهار اللودر
+  profileLoader.classList.remove("hidden");
+
+  new Compressor(file,{
+    quality: 0.2,        // 0.05 كانت ثقيلة ومبالغ فيها
+    maxWidth: 512,
+    maxHeight: 512,
+
+    success(result){
+
+      const reader = new FileReader();
+
+      reader.onload = function(e){
+        const url = e.target.result;
+
+        // 1️⃣ نحفظ الصورة في حساب المستخدم فقط
+        db.ref(`users/${user}/avatar`).set(url)
+        .then(()=>{
+
+          // 2️⃣ تحديث صورة البروفايل فوراً
+          profilePic.src = url;
+
+          // 3️⃣ تحديث البوستات لكن بشكل آمن (عدد محدود)
+          return db.ref("posts")
+            .orderByChild("user")
+            .equalTo(user)
+            .limitToLast(20)   // ⬅ يمنع التجميد
+            .get();
+        })
+        .then(snapshot=>{
+          snapshot.forEach(p=>{
+            db.ref(`posts/${p.key}/userAvatar`).set(url);
+          });
+        })
+        .catch(err=>{
+          console.error(err);
+          alert("فشل تحديث الصورة");
+        })
+        .finally(()=>{
+          // إخفاء اللودر مهما حصل
+          profileLoader.classList.add("hidden");
+        });
+      };
+
+      reader.readAsDataURL(result);
+    }
+  });
+}
   
 // ===== FRIENDS =====
 
