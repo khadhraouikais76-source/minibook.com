@@ -360,7 +360,7 @@ function uploadAvatar(input){
           return db.ref("posts")
             .orderByChild("user")
             .equalTo(user)
-            .limitToLast(20)   // ⬅ يمنع التجميد
+            .limitToLast(5)   // ⬅ يمنع التجميد
             .get();
         })
         .then(snapshot=>{
