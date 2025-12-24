@@ -267,7 +267,7 @@ function renderPost(d,id){
   return `<div class="post">  
     <div class="flex">${avatarHTML}<b>${d.user}</b></div>  
     <p>${d.text||""}</p>  
-    ${d.img?`<img src="${post.image}" loading="lazy">`:''}  
+    ${d.img?`<img src="${post.image}">`:''}  
     ${deleteBtn}  
     <div class="small">${new Date(d.time).toLocaleString()}</div>  
     <div><span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span><span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span><span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span><span>${likes}</span></div>  
