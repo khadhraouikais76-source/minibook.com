@@ -268,66 +268,203 @@ function logout(){ localStorage.removeItem("user"); location.reload(); }
 }
   
 // ===== Render Post =====  
-function renderPost(d,id){  
-  let likes = Object.values(d.likes||{}).join(" ");  
-  let commentsHtml = "";  
-  if(d.comments){ for(const c in d.comments){ commentsHtml += `<div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>`; } }  
-  let avatarHTML = d.userAvatar ? `<img src="${d.userAvatar}" class="avatar">` : `<div class="avatar-placeholder" style="background:#6b46c1">${d.user[0].toUpperCase()}</div>`;  
-  let deleteBtn = d.user===user ? `<button class="delete-btn" onclick="deletePost('${id}')">Supprimer</button>` : '';  
-  return `<div class="post">  
-    <div class="flex">${avatarHTML}<b>${d.user}</b></div>  
-    <p>${d.text||""}</p>  
-    ${d.img?`<img src="${d.img}">`:''}  
-    ${deleteBtn}  
-    <div class="small">${new Date(d.time).toLocaleString()}</div>  
-    <div><span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span><span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span><span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span><span>${likes}</span></div>  
-    <div class="comment">${commentsHtml}<input placeholder="Écrire un commentaire..." id="c${id}"><button onclick="addComment('${id}')">Commenter</button></div>  
-  </div>`;  
-}  
-  // ===== LOAD FEED =====  
-function loadFeed(){  
-  feedLoader.classList.remove("hidden");  
-  db.ref("posts").on("value",snap=>{  
-    feedCache=[];  
-    snap.forEach(p=>{ feedCache.push({key:p.key,val:p.val()}); });  
-    feedCache.sort((a,b)=>b.val.time-a.val.time);  
-    allPosts.innerHTML="";  
-    feedCache.forEach(p=>{ allPosts.innerHTML += renderPost(p.val,p.key); });  
-    feedLoader.classList.add("hidden");  
-  });  
-}  
+function renderPost(d, id){
+
+  // ===== Likes render =====
+  const likes = renderLikes(d.likes || {});
+
+  // ===== Comments render =====
+  let commentsHtml = "";
+  if(d.comments){
+    for(const c in d.comments){
+      commentsHtml += `
+        <div class="small comment-item">
+          <b>${escapeHTML(d.comments[c].user)}:</b>
+          ${escapeHTML(d.comments[c].text)}
+        </div>
+      `;
+    }
+  }
+
+  // ===== Avatar =====
+  let avatarHTML = d.userAvatar
+    ? `<img src="${d.userAvatar}" class="avatar">`
+    : `<div class="avatar-placeholder">
+        ${escapeHTML(d.user?.[0]?.toUpperCase() || "?")}
+       </div>`;
+
+  // ===== Delete button =====
+  let deleteBtn = (d.user === user)
+    ? `<button class="delete-btn" onclick="deletePost('${id}')">Supprimer</button>`
+    : '';
+
+  // ===== HTML =====
+  return `
+  <div class="post" data-id="${id}">
+
+    <div class="flex user-line">
+      ${avatarHTML}
+      <b>${escapeHTML(d.user || "Inconnu")}</b>
+    </div>
+
+    <p class="post-text">${escapeHTML(d.text || "")}</p>
+
+    ${d.img ? `<img src="${d.img}" class="post-img" loading="lazy">` : ""}
+
+    ${deleteBtn}
+
+    <div class="small post-time">
+      ${new Date(d.time).toLocaleString()}
+    </div>
+
+    <div class="likes">
+      <span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','😮')">😮</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','😢')">😢</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','🔥')">🔥</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','👏')">👏</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','😡')">😡</span>
+      <span class="likes-count">${likes}</span>
+    </div>
+
+    <div class="comment-box">
+      ${commentsHtml}
+      <input
+        type="text"
+        placeholder="أكتب تعليق..."
+        id="c${id}"
+        class="comment-input"
+      >
+      <button onclick="addComment('${id}')" class="comment-btn">
+        تعليق
+      </button>
+    </div>
+
+  </div>`;
+}
+ // ===== LOAD FEED (FIXED) =====
+function loadFeed(){
+
+  feedLoader.classList.remove("hidden");
+
+  // مهم: نحي أي listener قديم
+  db.ref("posts").off();
+
+  db.ref("posts").on("value", snap => {
+
+    let feedCache = [];
+    let html = "";
+
+    snap.forEach(p => {
+      feedCache.push({
+        key: p.key,
+        val: p.val()
+      });
+    });
+
+    // ترتيب من الأحدث للأقدم
+    feedCache.sort((a,b) => b.val.time - a.val.time);
+
+    // نبني HTML مرة وحدة
+    feedCache.forEach(p => {
+      html += renderPost(p.val, p.key);
+    });
+
+    // تحديث DOM مرة وحدة
+    allPosts.innerHTML = html;
+
+    feedLoader.classList.add("hidden");
+  });
+}
   
-// ===== LOAD PROFILE POSTS =====  
-function loadProfile(){  
-  profileLoader.classList.remove("hidden");  
-  db.ref("posts").on("value",snap=>{  
-    profileCache=[];  
-    snap.forEach(p=>{ if(p.val().user===user) profileCache.push({key:p.key,val:p.val()}); });  
-    profileCache.sort((a,b)=>b.val.time-a.val.time);  
-    myPosts.innerHTML="";  
-    profileCache.forEach(p=>{ myPosts.innerHTML += renderPost(p.val,p.key); });  
-    profileLoader.classList.add("hidden");  
-  });  
-}  
-  
-// ===== LIKE / COMMENT / DELETE =====  
-function deletePost(id){ db.ref("posts/"+id).remove(); }  
-  
-function toggleLike(postId,emoji){  
-  db.ref(`posts/${postId}/likes/${user}`).get().then(s=>{  
-    if(s.exists() && s.val()===emoji){ db.ref(`posts/${postId}/likes/${user}`).remove(); }  
-    else db.ref(`posts/${postId}/likes/${user}`).set(emoji);  
-  });  
-}  
-  
-function addComment(postId){  
-  const input=document.getElementById("c"+postId);  
-  const text=input.value.trim();  
-  if(!text) return;  
-  const commentId=Date.now();  
-  db.ref(`posts/${postId}/comments/${commentId}`).set({user,text});  
-  input.value="";  
-}  
+// ===== LOAD PROFILE POSTS =====
+function loadProfile(){
+
+  profileLoader.classList.remove("hidden");
+
+  // نحي أي listener قديم باش ما يتكررش
+  db.ref("posts").off();
+
+  db.ref("posts").on("value", snap => {
+
+    let profileCache = [];
+    let html = "";
+
+    snap.forEach(p => {
+      const val = p.val();
+      if(val.user === user){
+        profileCache.push({ key: p.key, val });
+      }
+    });
+
+    // ترتيب من الأحدث للأقدم
+    profileCache.sort((a,b) => b.val.time - a.val.time);
+
+    // بناء HTML مرة وحدة (أسرع)
+    profileCache.forEach(p => {
+      html += renderPost(p.val, p.key);
+    });
+
+    myPosts.innerHTML = html;
+    profileLoader.classList.add("hidden");
+  });
+}
+
+
+// ===== LIKE / COMMENT / DELETE =====
+
+// حذف بوست (فقط للتجربة – تنجم تزيد confirm)
+function deletePost(id){
+  if(!confirm("حذف المنشور؟")) return;
+  db.ref("posts/" + id).remove();
+}
+
+
+// لايك واحد لكل user
+function toggleLike(postId, emoji){
+
+  if(!user) return alert("سجّل الدخول");
+
+  const ref = db.ref(`posts/${postId}/likes/${user}`);
+
+  ref.once("value").then(snap => {
+    if(snap.exists()){
+      // إزالة اللايك
+      ref.remove();
+    }else{
+      // إضافة لايك
+      ref.set(emoji);
+    }
+  });
+}
+
+
+// إضافة تعليق (بدون ضياع التعليقات)
+function addComment(postId){
+
+  if(!user) return alert("سجّل الدخول");
+
+  const input = document.getElementById("c" + postId);
+  if(!input) return;
+
+  const text = input.value.trim();
+  if(!text) return;
+
+  const comment = {
+    user: user,
+    text: text,
+    time: Date.now()
+  };
+
+  // push = مفتاح فريد (أفضل من Date.now())
+  db.ref(`posts/${postId}/comments`).push(comment)
+    .then(() => {
+      input.value = "";
+    })
+    .catch(err => console.error(err));
+}
   
 // ===== BIO / AVATAR =====  
 
