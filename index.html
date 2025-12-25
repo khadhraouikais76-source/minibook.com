@@ -344,38 +344,39 @@ function renderPost(d, id){
 
   </div>`;
 }
- // ===== LOAD FEED (FIXED) =====
+ // ===== LOAD FEED =====
 function loadFeed(){
 
   feedLoader.classList.remove("hidden");
 
-  // مهم: نحي أي listener قديم
-  db.ref("posts").off();
-
   db.ref("posts").on("value", snap => {
 
-    let feedCache = [];
     let html = "";
+    let feedCache = [];
+
+    if(!snap.exists()){
+      allPosts.innerHTML = "<p class='small'>لا توجد منشورات</p>";
+      feedLoader.classList.add("hidden");
+      return;
+    }
 
     snap.forEach(p => {
-      feedCache.push({
-        key: p.key,
-        val: p.val()
-      });
+      feedCache.push({ key: p.key, val: p.val() });
     });
 
-    // ترتيب من الأحدث للأقدم
     feedCache.sort((a,b) => b.val.time - a.val.time);
 
-    // نبني HTML مرة وحدة
     feedCache.forEach(p => {
       html += renderPost(p.val, p.key);
     });
 
-    // تحديث DOM مرة وحدة
     allPosts.innerHTML = html;
-
     feedLoader.classList.add("hidden");
+  },
+  err => {
+    console.error(err);
+    feedLoader.classList.add("hidden");
+    allPosts.innerHTML = "<p class='small'>خطأ في تحميل المنشورات</p>";
   });
 }
   
@@ -387,8 +388,14 @@ function loadProfile(){
   db.ref("posts").once("value")
     .then(snap => {
 
-      let profileCache = [];
       let html = "";
+      let profileCache = [];
+
+      if(!snap.exists()){
+        myPosts.innerHTML = "<p class='small'>لا توجد منشورات</p>";
+        profileLoader.classList.add("hidden");
+        return;
+      }
 
       snap.forEach(p => {
         const val = p.val();
@@ -397,14 +404,12 @@ function loadProfile(){
         }
       });
 
-      // لو ما فماش بوستات
       if(profileCache.length === 0){
         myPosts.innerHTML = "<p class='small'>لا توجد منشورات</p>";
         profileLoader.classList.add("hidden");
         return;
       }
 
-      // ترتيب من الأحدث
       profileCache.sort((a,b) => b.val.time - a.val.time);
 
       profileCache.forEach(p => {
