@@ -107,13 +107,19 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
     <button class="primary" onclick="sendMessage()">Envoyer</button>  
     <div id="chatLoader" class="loader hidden"></div>  
   </div>  
-</div>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>  <script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.1.1/compressor.min.js"></script>  <script>  
+</div>  
+	<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.1.1/compressor.min.js"></script>
+	<script>  
 // ===== Firebase Initialization =====  
 firebase.initializeApp({  
   apiKey:"AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",  
   databaseURL:"https://book-ee927-default-rtdb.firebaseio.com"  
 });  
 const db = firebase.database(); 
+		const auth = firebase.auth();
 	// ===== SIMPLE ALERT FUNCTION =====
 function showAlert(message){
   setTimeout(()=>{
