@@ -351,32 +351,26 @@ function loadFeed(){
 
   db.ref("posts").on("value", snap => {
 
-    let html = "";
-    let feedCache = [];
+    try {
+      feedCache = [];
 
-    if(!snap.exists()){
-      allPosts.innerHTML = "<p class='small'>لا توجد منشورات</p>";
-      feedLoader.classList.add("hidden");
-      return;
+      snap.forEach(p => {
+        feedCache.push({ key: p.key, val: p.val() });
+      });
+
+      feedCache.sort((a,b) => b.val.time - a.val.time);
+
+      allPosts.innerHTML = "";
+      feedCache.forEach(p => {
+        allPosts.innerHTML += renderPost(p.val, p.key);
+      });
+
+    } catch(e){
+      console.error("LOAD FEED ERROR:", e);
     }
 
-    snap.forEach(p => {
-      feedCache.push({ key: p.key, val: p.val() });
-    });
-
-    feedCache.sort((a,b) => b.val.time - a.val.time);
-
-    feedCache.forEach(p => {
-      html += renderPost(p.val, p.key);
-    });
-
-    allPosts.innerHTML = html;
+    // مهما صار، نحبّس اللودر
     feedLoader.classList.add("hidden");
-  },
-  err => {
-    console.error(err);
-    feedLoader.classList.add("hidden");
-    allPosts.innerHTML = "<p class='small'>خطأ في تحميل المنشورات</p>";
   });
 }
   
@@ -385,45 +379,31 @@ function loadProfile(){
 
   profileLoader.classList.remove("hidden");
 
-  db.ref("posts").once("value")
-    .then(snap => {
+  db.ref("posts").on("value", snap => {
 
-      let html = "";
-      let profileCache = [];
-
-      if(!snap.exists()){
-        myPosts.innerHTML = "<p class='small'>لا توجد منشورات</p>";
-        profileLoader.classList.add("hidden");
-        return;
-      }
+    try {
+      profileCache = [];
 
       snap.forEach(p => {
-        const val = p.val();
-        if(val && val.user === user){
-          profileCache.push({ key: p.key, val });
+        if(p.val().user === user){
+          profileCache.push({ key: p.key, val: p.val() });
         }
       });
 
-      if(profileCache.length === 0){
-        myPosts.innerHTML = "<p class='small'>لا توجد منشورات</p>";
-        profileLoader.classList.add("hidden");
-        return;
-      }
-
       profileCache.sort((a,b) => b.val.time - a.val.time);
 
+      myPosts.innerHTML = "";
       profileCache.forEach(p => {
-        html += renderPost(p.val, p.key);
+        myPosts.innerHTML += renderPost(p.val, p.key);
       });
 
-      myPosts.innerHTML = html;
-      profileLoader.classList.add("hidden");
-    })
-    .catch(err => {
-      console.error(err);
-      profileLoader.classList.add("hidden");
-      myPosts.innerHTML = "<p class='small'>خطأ في تحميل المنشورات</p>";
-    });
+    } catch(e){
+      console.error("LOAD PROFILE ERROR:", e);
+    }
+
+    // مهما صار، نحبّس اللودر
+    profileLoader.classList.add("hidden");
+  });
 }
 
 // ===== LIKE / COMMENT / DELETE =====
