@@ -42,6 +42,19 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
 @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}  
 @media(max-width:768px){.container{margin:15px;padding:15px;}.navbar button{font-size:15px;}}  
 @media(max-width:480px){#auth h3{font-size:24px;} input,textarea,button.primary{font-size:14px;padding:12px;}}  
+
+.reaction-box{position:relative;display:flex;gap:8px}
+.reactions{
+  position:absolute;
+  bottom:30px;
+  background:#fff;
+  border-radius:20px;
+  padding:5px;
+  display:none;
+}
+.reactions span{font-size:22px;padding:4px;cursor:pointer}
+.main-like{cursor:pointer}
+	
 </style>  
 </head>  
 <body> 
@@ -269,7 +282,7 @@ function logout(){ localStorage.removeItem("user"); location.reload(); }
 		// ===== Render Post =====  
 function renderPost(d,id){  
 
-  // ===== COUNT EMOJIS =====
+  // COUNT EMOJIS
   let likes = "";
   if(d.likes){
     const count = {};
@@ -281,7 +294,7 @@ function renderPost(d,id){
     }
   }
 
-  // ===== COMMENTS =====
+  // COMMENTS
   let commentsHtml = "";  
   if(d.comments){ 
     for(const c in d.comments){ 
@@ -289,42 +302,47 @@ function renderPost(d,id){
     } 
   }  
 
-  // ===== AVATAR =====
   let avatarHTML = d.userAvatar 
     ? `<img src="${d.userAvatar}" class="avatar">` 
-    : `<div class="avatar-placeholder" style="background:#6b46c1">${d.user[0].toUpperCase()}</div>`;  
+    : `<div class="avatar-placeholder">${d.user[0].toUpperCase()}</div>`;  
 
   let deleteBtn = d.user===user 
-    ? `<button class="delete-btn" onclick="deletePost('${id}')">Supprimer</button>` 
+    ? `<button onclick="deletePost('${id}')">Supprimer</button>` 
     : '';  
 
-  return `<div class="post">  
-    <div class="flex">${avatarHTML}<b>${d.user}</b></div>  
-    <p>${d.text||""}</p>  
-    ${d.img?`<img src="${d.img}">`:''}  
-    ${deleteBtn}  
-    <div class="small">${new Date(d.time).toLocaleString()}</div>  
+  return `
+  <div class="post">
+    <div>${avatarHTML} <b>${d.user}</b></div>
+    <p>${d.text||""}</p>
+    ${d.img?`<img src="${d.img}">`:''}
+    ${deleteBtn}
+    <div>${new Date(d.time).toLocaleString()}</div>
+
+    <!-- LIKE FACEBOOK STYLE -->
+    <div class="reaction-box">
+      <span class="main-like"
+        ontouchstart="showReactions(this)"
+        onmouseenter="showReactions(this)">👍</span>
+
+      <div class="reactions">
+        <span onclick="pickReaction('${id}','👍')">👍</span>
+        <span onclick="pickReaction('${id}','❤️')">❤️</span>
+        <span onclick="pickReaction('${id}','😂')">😂</span>
+        <span onclick="pickReaction('${id}','😮')">😮</span>
+        <span onclick="pickReaction('${id}','😢')">😢</span>
+        <span onclick="pickReaction('${id}','😡')">😡</span>
+      </div>
+
+      <span>${likes}</span>
+    </div>
 
     <div>
-      <span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span>
-      <span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span>
-      <span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span>
-      <span class="emoji-btn" onclick="toggleLike('${id}','😮')">😮</span>
-      <span class="emoji-btn" onclick="toggleLike('${id}','😢')">😢</span>
-      <span class="emoji-btn" onclick="toggleLike('${id}','😡')">😡</span>
-      <span class="emoji-btn" onclick="toggleLike('${id}','🔥')">🔥</span>
-      <span class="emoji-btn" onclick="toggleLike('${id}','👏')">👏</span>
-      <span>${likes}</span>
-    </div>  
-
-    <div class="comment">
       ${commentsHtml}
-      <input placeholder="Écrire un commentaire...">
-      <button onclick="addComment('${id}', this)">Commenter</button>
-    </div>  
-  </div>`;  
-}  
-
+      <input placeholder="Commentaire">
+      <button onclick="addComment('${id}',this)">OK</button>
+    </div>
+  </div>`;
+}
 
 // ===== LOAD FEED =====  
 function loadFeed(){  
@@ -635,6 +653,24 @@ if(savedUser){
   user=savedUser;   
   startApp();   
 }  
+		// =============================
+// FACEBOOK STYLE REACTIONS
+// =============================
+
+function pickReaction(postId, emoji){
+  toggleLike(postId, emoji);
+}
+
+function showReactions(el){
+  document.querySelectorAll(".reactions").forEach(r=>r.style.display="none");
+  el.parentElement.querySelector(".reactions").style.display="flex";
+}
+
+document.addEventListener("click", e=>{
+  document.querySelectorAll(".reactions").forEach(r=>{
+    if(!r.contains(e.target)) r.style.display="none";
+  });
+});
   </script>  
   
 	<script>
@@ -689,7 +725,9 @@ if(savedUser){
   }
 
   window.addEventListener("load", translateUI);
+		
 </script>
+	
 	<script
   async="async"
   data-cfasync="false"
@@ -697,5 +735,7 @@ if(savedUser){
 ></script>
 <div id="container-7ce278eca43002f8c43475716f0e33ac"></div>
 <script src="https://pl28271677.effectivegatecpm.com/80/ad/57/80ad5725e11d3a76d1393f090a382411.js"></script>
+
+
 </body>  
 </html>
