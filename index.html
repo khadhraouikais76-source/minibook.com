@@ -384,34 +384,42 @@ function loadProfile(){
 
   profileLoader.classList.remove("hidden");
 
-  // نحي أي listener قديم باش ما يتكررش
-  db.ref("posts").off();
+  db.ref("posts").once("value")
+    .then(snap => {
 
-  db.ref("posts").on("value", snap => {
+      let profileCache = [];
+      let html = "";
 
-    let profileCache = [];
-    let html = "";
+      snap.forEach(p => {
+        const val = p.val();
+        if(val && val.user === user){
+          profileCache.push({ key: p.key, val });
+        }
+      });
 
-    snap.forEach(p => {
-      const val = p.val();
-      if(val.user === user){
-        profileCache.push({ key: p.key, val });
+      // لو ما فماش بوستات
+      if(profileCache.length === 0){
+        myPosts.innerHTML = "<p class='small'>لا توجد منشورات</p>";
+        profileLoader.classList.add("hidden");
+        return;
       }
+
+      // ترتيب من الأحدث
+      profileCache.sort((a,b) => b.val.time - a.val.time);
+
+      profileCache.forEach(p => {
+        html += renderPost(p.val, p.key);
+      });
+
+      myPosts.innerHTML = html;
+      profileLoader.classList.add("hidden");
+    })
+    .catch(err => {
+      console.error(err);
+      profileLoader.classList.add("hidden");
+      myPosts.innerHTML = "<p class='small'>خطأ في تحميل المنشورات</p>";
     });
-
-    // ترتيب من الأحدث للأقدم
-    profileCache.sort((a,b) => b.val.time - a.val.time);
-
-    // بناء HTML مرة وحدة (أسرع)
-    profileCache.forEach(p => {
-      html += renderPost(p.val, p.key);
-    });
-
-    myPosts.innerHTML = html;
-    profileLoader.classList.add("hidden");
-  });
 }
-
 
 // ===== LIKE / COMMENT / DELETE =====
 
