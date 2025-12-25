@@ -268,22 +268,65 @@ function logout(){ localStorage.removeItem("user"); location.reload(); }
 }
 		// ===== Render Post =====  
 function renderPost(d,id){  
-  let likes = Object.values(d.likes||{}).join(" ");  
+
+  // ===== COUNT EMOJIS =====
+  let likes = "";
+  if(d.likes){
+    const count = {};
+    Object.values(d.likes).forEach(e=>{
+      count[e] = (count[e] || 0) + 1;
+    });
+    for(const e in count){
+      likes += `${e} ${count[e]} `;
+    }
+  }
+
+  // ===== COMMENTS =====
   let commentsHtml = "";  
-  if(d.comments){ for(const c in d.comments){ commentsHtml += `<div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>`; } }  
-  let avatarHTML = d.userAvatar ? `<img src="${d.userAvatar}" class="avatar">` : `<div class="avatar-placeholder" style="background:#6b46c1">${d.user[0].toUpperCase()}</div>`;  
-  let deleteBtn = d.user===user ? `<button class="delete-btn" onclick="deletePost('${id}')">Supprimer</button>` : '';  
+  if(d.comments){ 
+    for(const c in d.comments){ 
+      commentsHtml += `<div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>`; 
+    } 
+  }  
+
+  // ===== AVATAR =====
+  let avatarHTML = d.userAvatar 
+    ? `<img src="${d.userAvatar}" class="avatar">` 
+    : `<div class="avatar-placeholder" style="background:#6b46c1">${d.user[0].toUpperCase()}</div>`;  
+
+  let deleteBtn = d.user===user 
+    ? `<button class="delete-btn" onclick="deletePost('${id}')">Supprimer</button>` 
+    : '';  
+
   return `<div class="post">  
     <div class="flex">${avatarHTML}<b>${d.user}</b></div>  
     <p>${d.text||""}</p>  
     ${d.img?`<img src="${d.img}">`:''}  
     ${deleteBtn}  
     <div class="small">${new Date(d.time).toLocaleString()}</div>  
-    <div><span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span><span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span><span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span><span>${likes}</span></div>  
-    <div class="comment">${commentsHtml}<input placeholder="Écrire un commentaire..." id="c${id}"><button onclick="addComment('${id}')">Commenter</button></div>  
+
+    <div>
+      <span class="emoji-btn" onclick="toggleLike('${id}','👍')">👍</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','❤️')">❤️</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','😂')">😂</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','😮')">😮</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','😢')">😢</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','😡')">😡</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','🔥')">🔥</span>
+      <span class="emoji-btn" onclick="toggleLike('${id}','👏')">👏</span>
+      <span>${likes}</span>
+    </div>  
+
+    <div class="comment">
+      ${commentsHtml}
+      <input placeholder="Écrire un commentaire...">
+      <button onclick="addComment('${id}', this)">Commenter</button>
+    </div>  
   </div>`;  
 }  
-  // ===== LOAD FEED =====  
+
+
+// ===== LOAD FEED =====  
 function loadFeed(){  
   feedLoader.classList.remove("hidden");  
   db.ref("posts").on("value",snap=>{  
@@ -295,41 +338,56 @@ function loadFeed(){
     feedLoader.classList.add("hidden");  
   });  
 }  
-  
+
+
 // ===== LOAD PROFILE POSTS =====  
 function loadProfile(){  
   profileLoader.classList.remove("hidden");  
   db.ref("posts").on("value",snap=>{  
     profileCache=[];  
-    snap.forEach(p=>{ if(p.val().user===user) profileCache.push({key:p.key,val:p.val()}); });  
+    snap.forEach(p=>{ 
+      if(p.val().user===user) 
+        profileCache.push({key:p.key,val:p.val()}); 
+    });  
     profileCache.sort((a,b)=>b.val.time-a.val.time);  
     myPosts.innerHTML="";  
     profileCache.forEach(p=>{ myPosts.innerHTML += renderPost(p.val,p.key); });  
     profileLoader.classList.add("hidden");  
   });  
 }  
-  
+
+
 // ===== LIKE / COMMENT / DELETE =====  
-function deletePost(id){ db.ref("posts/"+id).remove(); }  
-  
+function deletePost(id){ 
+  db.ref("posts/"+id).remove(); 
+}  
+
+
 function toggleLike(postId,emoji){  
   db.ref(`posts/${postId}/likes/${user}`).get().then(s=>{  
-    if(s.exists() && s.val()===emoji){ db.ref(`posts/${postId}/likes/${user}`).remove(); }  
-    else db.ref(`posts/${postId}/likes/${user}`).set(emoji);  
+    if(s.exists() && s.val()===emoji){ 
+      db.ref(`posts/${postId}/likes/${user}`).remove(); 
+    }  
+    else {
+      db.ref(`posts/${postId}/likes/${user}`).set(emoji); 
+    }
   });  
 }  
-  
-function addComment(postId){  
-  const input=document.getElementById("c"+postId);  
-  const text=input.value.trim();  
+
+
+function addComment(postId, btn){  
+  const input = btn.previousElementSibling;
+  const text = input.value.trim();  
   if(!text) return;  
-  const commentId=Date.now();  
-  db.ref(`posts/${postId}/comments/${commentId}`).set({user,text});  
+
+  const commentId = Date.now();  
+  db.ref(`posts/${postId}/comments/${commentId}`).set({
+    user,
+    text
+  });  
+
   input.value="";  
-}  
-  
-// ===== BIO / 
-  
+}
 // ===== BIO / AVATAR =====  
 
 function saveBio(){
