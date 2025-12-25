@@ -344,68 +344,31 @@ function renderPost(d, id){
 
   </div>`;
 }
- // ===== LOAD FEED =====
-function loadFeed(){
-
-  feedLoader.classList.remove("hidden");
-
-  db.ref("posts").on("value", snap => {
-
-    try {
-      feedCache = [];
-
-      snap.forEach(p => {
-        feedCache.push({ key: p.key, val: p.val() });
-      });
-
-      feedCache.sort((a,b) => b.val.time - a.val.time);
-
-      allPosts.innerHTML = "";
-      feedCache.forEach(p => {
-        allPosts.innerHTML += renderPost(p.val, p.key);
-      });
-
-    } catch(e){
-      console.error("LOAD FEED ERROR:", e);
-    }
-
-    // مهما صار، نحبّس اللودر
-    feedLoader.classList.add("hidden");
-  });
-}
+  // ===== LOAD FEED =====  
+function loadFeed(){  
+  feedLoader.classList.remove("hidden");  
+  db.ref("posts").on("value",snap=>{  
+    feedCache=[];  
+    snap.forEach(p=>{ feedCache.push({key:p.key,val:p.val()}); });  
+    feedCache.sort((a,b)=>b.val.time-a.val.time);  
+    allPosts.innerHTML="";  
+    feedCache.forEach(p=>{ allPosts.innerHTML += renderPost(p.val,p.key); });  
+    feedLoader.classList.add("hidden");  
+  });  
+}  
   
-// ===== LOAD PROFILE POSTS =====
-function loadProfile(){
-
-  profileLoader.classList.remove("hidden");
-
-  db.ref("posts").on("value", snap => {
-
-    try {
-      profileCache = [];
-
-      snap.forEach(p => {
-        if(p.val().user === user){
-          profileCache.push({ key: p.key, val: p.val() });
-        }
-      });
-
-      profileCache.sort((a,b) => b.val.time - a.val.time);
-
-      myPosts.innerHTML = "";
-      profileCache.forEach(p => {
-        myPosts.innerHTML += renderPost(p.val, p.key);
-      });
-
-    } catch(e){
-      console.error("LOAD PROFILE ERROR:", e);
-    }
-
-    // مهما صار، نحبّس اللودر
-    profileLoader.classList.add("hidden");
-  });
-}
-
+// ===== LOAD PROFILE POSTS =====  
+function loadProfile(){  
+  profileLoader.classList.remove("hidden");  
+  db.ref("posts").on("value",snap=>{  
+    profileCache=[];  
+    snap.forEach(p=>{ if(p.val().user===user) profileCache.push({key:p.key,val:p.val()}); });  
+    profileCache.sort((a,b)=>b.val.time-a.val.time);  
+    myPosts.innerHTML="";  
+    profileCache.forEach(p=>{ myPosts.innerHTML += renderPost(p.val,p.key); });  
+    profileLoader.classList.add("hidden");  
+  });  
+}  
 // ===== LIKE / COMMENT / DELETE =====
 
 // حذف بوست (فقط للتجربة – تنجم تزيد confirm)
