@@ -214,70 +214,150 @@ function logout(){ localStorage.removeItem("user"); location.reload(); }
   
 // ===== Post Handling =====  
 	
-  function handlePost(text, file, textArea, fileInput) {
-  if (!text && !file) return; // لا يوجد نص ولا صورة → لا نفعل شيء
+  async function handlePost(text, file, textArea, fileInput) {
+  if (!text && !file) return;
 
-  const id = Date.now(); // معرف مؤقت للمنشور
+  const id = Date.now();
   feedLoader.classList.remove("hidden");
   profileLoader.classList.remove("hidden");
 
-  function savePostFinal(img) {
-    db.ref(`users/${user}`).get()
-      .then(snapshot => {
-        const avatar = snapshot.val()?.avatar || "";
-        db.ref("posts/" + id).set({
-          user,
-          userAvatar: avatar,
-          text,
-          img,
-          time: Date.now(),
-          likes: {},
-          comments: {}
-        }).finally(() => {
-          textArea.value = "";
-          if (fileInput) fileInput.value = "";
-          feedLoader.classList.add("hidden");
-          profileLoader.classList.add("hidden");
-        });
-      })
-      .catch(err => {
-        console.error("Erreur lors de la récupération des données utilisateur:", err);
-        feedLoader.classList.add("hidden");
-        profileLoader.classList.add("hidden");
-      });
-  }
+  let postData = {
+    user,
+    text,
+    time: Date.now(),
+    likes: {},
+    comments: {}
+  };
 
-  if (file) {
-    // التحقق أن الملف صورة فقط عند الضغط على النشر
-    if (!file.type.startsWith("image/")) {
-      alert("Erreur : le fichier doit être une image !...يجب ان تكون صورة فقط...the file most bee photo"); // رسالة بالفرنسية
-      if (fileInput) fileInput.value = ""; // إزالة الملف غير المقبول
-      feedLoader.classList.add("hidden");
-      profileLoader.classList.add("hidden");
-      return; // الخروج من الدالة، لن يتم تحميل الملف
+  // ====== حفظ البوست ======
+  async function savePostFinal(extra = {}) {
+    try {
+      const snap = await db.ref(`users/${user}`).get();
+      postData.userAvatar = snap.val()?.avatar || "";
+      Object.assign(postData, extra);
+      await db.ref("posts/" + id).set(postData);
+    } catch (e) {
+      console.error(e);
     }
 
+    textArea.value = "";
+    if (fileInput) fileInput.value = "";
+    feedLoader.classList.add("hidden");
+    profileLoader.classList.add("hidden");
+  }
+
+  // ====== 1️⃣ رابط ======
+  if (text && text.match(/^https?:\/\//)) {
+    try {
+      const res = await fetch(
+        `https://api.microlink.io/?url=${encodeURIComponent(text)}`
+      );
+      const data = await res.json();
+
+      await savePostFinal({
+        link: text,
+        linkTitle: data.data?.title || "",
+        linkImage: data.data?.image?.url || "",
+        linkDesc: data.data?.description || ""
+      });
+      return;
+    } catch (e) {
+      console.error("Link preview error", e);
+    }
+  }
+
+  // ====== 2️⃣ صورة ======
+  if (file && file.type.startsWith("image/")) {
     new Compressor(file, {
-      quality: 0.07,
+      quality: 0.1,        // ضغط أقصى
       maxWidth: 1024,
       maxHeight: 1024,
       success(result) {
         const reader = new FileReader();
-        reader.onload = function(e) {
-          savePostFinal(e.target.result); // حفظ الصورة بعد تحويلها لـ Base64
+        reader.onload = e => {
+          savePostFinal({ img: e.target.result });
         };
         reader.readAsDataURL(result);
       },
       error(err) {
-        console.error("Erreur lors de la compression de l'image:", err);
-        alert("Erreur lors du traitement de l'image.");
+        console.error(err);
+        alert("Image processing error.");
         feedLoader.classList.add("hidden");
         profileLoader.classList.add("hidden");
       }
     });
-  } else {
-    savePostFinal(""); // إذا لا يوجد ملف، حفظ النص فقط
+    return;
   }
+
+  // ====== 3️⃣ فيديو (5MB + ضغط أقصى) ======
+  if (file && file.type.startsWith("video/")) {
+
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+
+    if (file.size > MAX_SIZE) {
+      alert("Error: Video size must not exceed 5 MB.");
+      if (fileInput) fileInput.value = "";
+      feedLoader.classList.add("hidden");
+      profileLoader.classList.add("hidden");
+      return;
+    }
+
+    try {
+      const video = document.createElement("video");
+      video.src = URL.createObjectURL(file);
+      video.muted = true;
+      video.playsInline = true;
+
+      video.onloadedmetadata = async () => {
+        const stream = video.captureStream();
+
+        const recorder = new MediaRecorder(stream, {
+          mimeType: "video/webm",
+          videoBitsPerSecond: 300000, // ضغط قوي جدًا
+          audioBitsPerSecond: 32000
+        });
+
+        let chunks = [];
+        recorder.ondataavailable = e => chunks.push(e.data);
+
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: "video/webm" });
+
+          if (blob.size > MAX_SIZE) {
+            alert("Error: Compressed video is still larger than 5 MB.");
+            feedLoader.classList.add("hidden");
+            profileLoader.classList.add("hidden");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = e => {
+            savePostFinal({ video: e.target.result });
+          };
+          reader.readAsDataURL(blob);
+        };
+
+        recorder.start();
+        video.play();
+
+        // تسجيل أقصى مدة 30 ثانية
+        setTimeout(() => {
+          recorder.stop();
+          video.pause();
+        }, 30000);
+      };
+
+    } catch (e) {
+      console.error("Video compression error", e);
+      alert("Video processing failed.");
+      feedLoader.classList.add("hidden");
+      profileLoader.classList.add("hidden");
+    }
+    return;
+  }
+
+  // ====== نص فقط ======
+  savePostFinal();
 }
 		// ===== Render Post =====  
 function renderPost(d,id){  
