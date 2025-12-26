@@ -59,40 +59,41 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
 
 #postProgress {
   width: 100%;
-  height: 4px;
-  background: #ddd;
-  margin: 6px 0;
-  overflow: hidden;
+  height: 5px;
+  background: #e0e0e0;
+  margin-top: 8px;
+  display: none;
 }
 
 #postProgressBar {
   width: 0%;
   height: 100%;
   background: #4caf50;
-  transition: width .2s;
+  transition: width 0.2s;
 }
 
 .post-video {
   width: 100%;
-  max-height: 400px;
+  max-height: 350px;
+}
+	.post-video {
+  width: 100%;
+  max-height: 350px;
   border-radius: 8px;
 }
 
-.link-preview {
-  display: flex;
-  gap: 8px;
+.post-img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.post-link {
+  display: block;
+  margin-top: 6px;
+  color: #2196f3;
   text-decoration: none;
-  color: inherit;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
+  word-break: break-all;
 }
-
-.link-preview img {
-  width: 120px;
-  object-fit: cover;
-}
-	
 </style>  
 </head>  
 <body> 
@@ -129,7 +130,9 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
     <textarea id="postText" placeholder="À quoi pensez-vous ?"></textarea>  
     <input type="file" id="postImage" accept="image/*">  
     <button class="primary" onclick="handlePost(postText.value, postImage.files[0], postText, postImage)">Publier</button>  
-	  
+	  <div id="postProgress">
+  <div id="postProgressBar"></div>
+</div>
     <div id="allPosts" style="min-height:50px; overflow-y:auto; max-height:500px;"></div>  
     <div id="feedLoader" class="loader hidden"></div>  
   </div>    <div id="profile" class="box hidden">  
@@ -258,27 +261,28 @@ function logout(){ localStorage.removeItem("user"); location.reload(); }
 	
   
   async function handlePost(text, file, textArea, fileInput) {
+
   if (!text && !file) return;
 
-  const id = Date.now();
-  feedLoader.classList.remove("hidden");
-  profileLoader.classList.remove("hidden");
+  const progress = document.getElementById("postProgress");
+  const bar = document.getElementById("postProgressBar");
 
-  const progressBox = document.getElementById("postProgress");
-  const progressBar = document.getElementById("postProgressBar");
-
-  function setProgress(val) {
-    progressBox.classList.remove("hidden");
-    progressBar.style.width = val + "%";
+  function showProgress(p) {
+    progress.style.display = "block";
+    bar.style.width = p + "%";
   }
 
-  function endProgress() {
-    progressBar.style.width = "100%";
+  function hideProgress() {
+    bar.style.width = "100%";
     setTimeout(() => {
-      progressBox.classList.add("hidden");
-      progressBar.style.width = "0%";
+      progress.style.display = "none";
+      bar.style.width = "0%";
     }, 400);
   }
+
+  showProgress(10);
+
+  const id = Date.now();
 
   let postData = {
     user,
@@ -288,107 +292,61 @@ function logout(){ localStorage.removeItem("user"); location.reload(); }
     comments: {}
   };
 
-  async function savePostFinal(extra = {}) {
-    setProgress(80);
-    const snap = await db.ref(`users/${user}`).get();
+  async function savePost(extra = {}) {
+    showProgress(80);
+    const snap = await db.ref("users/" + user).get();
     postData.userAvatar = snap.val()?.avatar || "";
     Object.assign(postData, extra);
-
     await db.ref("posts/" + id).set(postData);
-
     textArea.value = "";
     if (fileInput) fileInput.value = "";
-    feedLoader.classList.add("hidden");
-    profileLoader.classList.add("hidden");
-    endProgress();
+    hideProgress();
   }
 
-  setProgress(10);
-
-  // ===== رابط =====
-  if (text && /^https?:\/\//.test(text)) {
-    try {
-      const r = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(text)}`);
-      const d = await r.json();
-      await savePostFinal({
-        link: text,
-        linkTitle: d.data?.title || "",
-        linkImage: d.data?.image?.url || "",
-        linkDesc: d.data?.description || ""
-      });
-      return;
-    } catch {}
+  // ===== LINK =====
+  if (text && /^https?:\/\//i.test(text)) {
+    await savePost({ link: text });
+    return;
   }
 
-  // ===== صورة =====
+  // ===== IMAGE =====
   if (file && file.type.startsWith("image/")) {
+    showProgress(30);
     new Compressor(file, {
       quality: 0.05,
       maxWidth: 1024,
-      maxHeight: 1024,
-      success(res) {
-        setProgress(40);
-        const reader = new FileReader();
-        reader.onload = e => savePostFinal({ img: e.target.result });
-        reader.readAsDataURL(res);
+      success(result) {
+        const r = new FileReader();
+        r.onload = e => savePost({ img: e.target.result });
+        r.readAsDataURL(result);
       }
     });
     return;
   }
 
-  // ===== فيديو =====
+  // ===== VIDEO =====
   if (file && file.type.startsWith("video/")) {
     const MAX = 5 * 1024 * 1024;
     if (file.size > MAX) {
       alert("Error: Video size must not exceed 5 MB.");
-      feedLoader.classList.add("hidden");
-      profileLoader.classList.add("hidden");
-      endProgress();
+      hideProgress();
       return;
     }
 
-    const video = document.createElement("video");
-    video.src = URL.createObjectURL(file);
-    video.muted = true;
-
-    video.onloadedmetadata = () => {
-      setProgress(40);
-      const stream = video.captureStream();
-      const recorder = new MediaRecorder(stream, {
-        mimeType: "video/webm",
-        videoBitsPerSecond: 300000,
-        audioBitsPerSecond: 32000
-      });
-
-      let chunks = [];
-      recorder.ondataavailable = e => chunks.push(e.data);
-      recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: "video/webm" });
-        if (blob.size > MAX) {
-          alert("Error: Compressed video is still larger than 5 MB.");
-          endProgress();
-          return;
-        }
-        setProgress(60);
-        const reader = new FileReader();
-        reader.onload = e => savePostFinal({ video: e.target.result });
-        reader.readAsDataURL(blob);
-      };
-
-      recorder.start();
-      video.play();
-      setTimeout(() => recorder.stop(), 30000);
-    };
+    showProgress(40);
+    const r = new FileReader();
+    r.onload = e => savePost({ video: e.target.result });
+    r.readAsDataURL(file);
     return;
   }
 
-  // ===== نص فقط =====
-  savePostFinal();
+  // ===== TEXT ONLY =====
+  await savePost();
 }
 		// ===== Render Post =====  
-function renderPost(d,id){  
+function renderPost(d, id){  
 
-  // COUNT EMOJIS
+  // ===== COUNT EMOJIS =====
   let likes = "";
   if(d.likes){
     const count = {};
@@ -400,29 +358,70 @@ function renderPost(d,id){
     }
   }
 
-  // COMMENTS
+  // ===== COMMENTS =====
   let commentsHtml = "";  
   if(d.comments){ 
     for(const c in d.comments){ 
-      commentsHtml += `<div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>`; 
+      commentsHtml += `
+        <div class="small">
+          <b>${d.comments[c].user}:</b> ${d.comments[c].text}
+        </div>`; 
     } 
   }  
 
+  // ===== AVATAR =====
   let avatarHTML = d.userAvatar 
     ? `<img src="${d.userAvatar}" class="avatar">` 
     : `<div class="avatar-placeholder">${d.user[0].toUpperCase()}</div>`;  
 
-  let deleteBtn = d.user===user 
+  // ===== DELETE BTN =====
+  let deleteBtn = d.user === user 
     ? `<button onclick="deletePost('${id}')">Supprimer</button>` 
     : '';  
 
+  // ===== MEDIA =====
+  let mediaHTML = "";
+
+  // IMAGE
+  if(d.img){
+    mediaHTML += `<img src="${d.img}" class="post-img">`;
+  }
+
+  // VIDEO
+  if(d.video){
+    mediaHTML += `
+      <video class="post-video" controls preload="metadata">
+        <source src="${d.video}">
+        Your browser does not support video.
+      </video>`;
+  }
+
+  // LINK (CLICKABLE)
+  if(d.link){
+    mediaHTML += `
+      <a href="${d.link}" target="_blank" class="post-link">
+        ${d.linkTitle ? `<strong>${d.linkTitle}</strong><br>` : ""}
+        ${d.link}
+      </a>`;
+  }
+
+  // ===== FINAL HTML =====
   return `
   <div class="post">
-    <div>${avatarHTML} <b>${d.user}</b></div>
-    <p>${d.text||""}</p>
-    ${d.img?`<img src="${d.img}">`:''}
+    <div class="post-header">
+      ${avatarHTML}
+      <b>${d.user}</b>
+    </div>
+
+    ${d.text ? `<p>${d.text}</p>` : ""}
+
+    ${mediaHTML}
+
     ${deleteBtn}
-    <div>${new Date(d.time).toLocaleString()}</div>
+
+    <div class="post-time">
+      ${new Date(d.time).toLocaleString()}
+    </div>
 
     <!-- LIKE FACEBOOK STYLE -->
     <div class="reaction-box">
@@ -433,11 +432,11 @@ function renderPost(d,id){
       <div class="reactions">
         <span onclick="pickReaction('${id}','👍')">👍</span>
         <span onclick="pickReaction('${id}','❤️')">❤️</span>
-		<span onclick="pickReaction('${id}','🥰')">🥰</span>
-		<span onclick="pickReaction('${id}','😭')">😭</span>
-		<span onclick="pickReaction('${id}','🤮')">🤮</span>
-		<span onclick="pickReaction('${id}','🔥')">🔥</span>
-		<span onclick="pickReaction('${id}','🌹')">🌹</span>
+        <span onclick="pickReaction('${id}','🥰')">🥰</span>
+        <span onclick="pickReaction('${id}','😭')">😭</span>
+        <span onclick="pickReaction('${id}','🤮')">🤮</span>
+        <span onclick="pickReaction('${id}','🔥')">🔥</span>
+        <span onclick="pickReaction('${id}','🌹')">🌹</span>
         <span onclick="pickReaction('${id}','😂')">😂</span>
         <span onclick="pickReaction('${id}','😮')">😮</span>
         <span onclick="pickReaction('${id}','😢')">😢</span>
@@ -447,7 +446,7 @@ function renderPost(d,id){
       <span>${likes}</span>
     </div>
 
-    <div>
+    <div class="comments">
       ${commentsHtml}
       <input placeholder="Commentaire">
       <button onclick="addComment('${id}',this)">OK</button>
