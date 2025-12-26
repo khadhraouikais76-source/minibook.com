@@ -54,6 +54,44 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
 }
 .reactions span{font-size:22px;padding:4px;cursor:pointer}
 .main-like{cursor:pointer}
+
+.hidden { display: none; }
+
+#postProgress {
+  width: 100%;
+  height: 4px;
+  background: #ddd;
+  margin: 6px 0;
+  overflow: hidden;
+}
+
+#postProgressBar {
+  width: 0%;
+  height: 100%;
+  background: #4caf50;
+  transition: width .2s;
+}
+
+.post-video {
+  width: 100%;
+  max-height: 400px;
+  border-radius: 8px;
+}
+
+.link-preview {
+  display: flex;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.link-preview img {
+  width: 120px;
+  object-fit: cover;
+}
 	
 </style>  
 </head>  
@@ -91,6 +129,7 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
     <textarea id="postText" placeholder="À quoi pensez-vous ?"></textarea>  
     <input type="file" id="postImage" accept="image/*">  
     <button class="primary" onclick="handlePost(postText.value, postImage.files[0], postText, postImage)">Publier</button>  
+	  
     <div id="allPosts" style="min-height:50px; overflow-y:auto; max-height:500px;"></div>  
     <div id="feedLoader" class="loader hidden"></div>  
   </div>    <div id="profile" class="box hidden">  
@@ -103,6 +142,9 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
     <textarea id="profilePostText" placeholder="À quoi pensez-vous ?"></textarea>  
     <input type="file" id="profilePostImage" accept="image/*">  
     <button class="primary" onclick="handlePost(profilePostText.value, profilePostImage.files[0], profilePostText, profilePostImage)">Publier</button>  
+	  <div id="postProgress" class="hidden">
+  <div id="postProgressBar"></div>
+</div>
     <div id="myPosts" style="min-height:50px; overflow-y:auto; max-height:500px;"></div>  
     <div id="profileLoader" class="loader hidden"></div>  
   </div>    <div id="friends" class="box hidden">  
