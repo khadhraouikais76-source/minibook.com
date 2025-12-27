@@ -222,6 +222,7 @@ function logout(){ localStorage.removeItem("user"); location.reload(); }
 	
 
 
+
 function handlePost(text, file, textArea, fileInput) {
 if (!text && !file) return; // لا يوجد نص ولا صورة → لا نفعل شيء
 
@@ -289,7 +290,8 @@ savePostFinal(""); // إذا لا يوجد ملف، حفظ النص فقط
 }
 }
 		// ===== Render Post =====  
-    function renderPost(d,id){
+    
+function renderPost(d,id){
 
 // COUNT EMOJIS
 let likes = "";
