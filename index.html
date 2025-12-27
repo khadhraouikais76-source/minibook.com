@@ -108,9 +108,7 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
     <textarea id="profilePostText" placeholder="À quoi pensez-vous ?"></textarea>  
     <input type="file" id="profilePostImage" accept="image/*">  
     <button class="primary" onclick="handlePost(profilePostText.value, profilePostImage.files[0], profilePostText, profilePostImage)">Publier</button>  
-	  <div id="postProgress" class="hidden">
-  <div id="postProgressBar"></div>
-</div>
+	  
     <div id="myPosts" style="min-height:50px; overflow-y:auto; max-height:500px;"></div>  
     <div id="profileLoader" class="loader hidden"></div>  
   </div>    <div id="friends" class="box hidden">  
