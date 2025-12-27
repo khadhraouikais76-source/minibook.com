@@ -57,42 +57,36 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
 
 .hidden { display: none; }
 
-#postProgress {
-  width: 100%;
-  height: 5px;
-  background: #e0e0e0;
-  margin-top: 8px;
-  display: none;
+#postProgress{
+  display:none;
+  width:100%;
+  height:6px;
+  background:#ddd;
+  position:relative;
+}
+#postProgressBar{
+  height:100%;
+  width:0%;
+  background:#4caf50;
+}
+#postProgressPercent{
+  position:absolute;
+  right:5px;
+  top:-18px;
+  font-size:12px;
 }
 
-#postProgressBar {
-  width: 0%;
-  height: 100%;
-  background: #4caf50;
-  transition: width 0.2s;
+.post-video,.post-img{
+  width:100%;
+  border-radius:8px;
 }
 
-.post-video {
-  width: 100%;
-  max-height: 350px;
-}
-	.post-video {
-  width: 100%;
-  max-height: 350px;
-  border-radius: 8px;
-}
-
-.post-img {
-  width: 100%;
-  border-radius: 8px;
-}
-
-.post-link {
-  display: block;
-  margin-top: 6px;
-  color: #2196f3;
-  text-decoration: none;
-  word-break: break-all;
+.post-link{
+  display:block;
+  margin-top:6px;
+  color:#1877f2;
+  font-weight:bold;
+  text-decoration:none;
 }
 </style>  
 </head>  
@@ -259,92 +253,107 @@ function logout(){ localStorage.removeItem("user"); location.reload(); }
   
 // ===== Post Handling =====  
 	
-  
-  async function handlePost(text, file, textArea, fileInput) {
+  async function handlePost(text, file, textArea, fileInput){
 
-  if (!text && !file) return;
+  if(!text && !file) return;
 
-  const progress = document.getElementById("postProgress");
+  const progressBox = document.getElementById("postProgress");
   const bar = document.getElementById("postProgressBar");
+  const percent = document.getElementById("postProgressPercent");
 
-  function showProgress(p) {
-    progress.style.display = "block";
-    bar.style.width = p + "%";
+  function setProgress(p){
+    progressBox.style.display="block";
+    bar.style.width = p+"%";
+    percent.textContent = p+"%";
   }
 
-  function hideProgress() {
-    bar.style.width = "100%";
-    setTimeout(() => {
-      progress.style.display = "none";
-      bar.style.width = "0%";
-    }, 400);
+  function endProgress(){
+    setProgress(100);
+    setTimeout(()=>{
+      progressBox.style.display="none";
+      bar.style.width="0%";
+      percent.textContent="";
+    },500);
   }
 
-  showProgress(10);
+  setProgress(10);
 
   const id = Date.now();
 
   let postData = {
     user,
-    text,
     time: Date.now(),
-    likes: {},
-    comments: {}
+    likes:{},
+    comments:{}
   };
 
-  async function savePost(extra = {}) {
-    showProgress(80);
-    const snap = await db.ref("users/" + user).get();
+  // ===== SAVE =====
+  async function savePost(extra){
+    setProgress(80);
+    const snap = await db.ref("users/"+user).get();
     postData.userAvatar = snap.val()?.avatar || "";
     Object.assign(postData, extra);
-    await db.ref("posts/" + id).set(postData);
-    textArea.value = "";
-    if (fileInput) fileInput.value = "";
-    hideProgress();
+    await db.ref("posts/"+id).set(postData);
+    textArea.value="";
+    if(fileInput) fileInput.value="";
+    endProgress();
   }
 
   // ===== LINK =====
-  if (text && /^https?:\/\//i.test(text)) {
-    await savePost({ link: text });
+  if(text && /^https?:\/\//i.test(text)){
+    setProgress(40);
+    await savePost({
+      link: text,
+      site: getSiteName(text)
+    });
     return;
   }
 
   // ===== IMAGE =====
-  if (file && file.type.startsWith("image/")) {
-    showProgress(30);
-    new Compressor(file, {
-      quality: 0.05,
-      maxWidth: 1024,
-      success(result) {
-        const r = new FileReader();
-        r.onload = e => savePost({ img: e.target.result });
-        r.readAsDataURL(result);
+  if(file && file.type.startsWith("image/")){
+    setProgress(40);
+    new Compressor(file,{
+      quality:0.05,
+      success(res){
+        const r=new FileReader();
+        r.onload=e=>savePost({img:e.target.result,text});
+        r.readAsDataURL(res);
       }
     });
     return;
   }
 
   // ===== VIDEO =====
-  if (file && file.type.startsWith("video/")) {
-    const MAX = 5 * 1024 * 1024;
-    if (file.size > MAX) {
+  if(file && file.type.startsWith("video/")){
+    const MAX = 5*1024*1024;
+    if(file.size>MAX){
       alert("Error: Video size must not exceed 5 MB.");
-      hideProgress();
+      endProgress();
       return;
     }
 
-    showProgress(40);
-    const r = new FileReader();
-    r.onload = e => savePost({ video: e.target.result });
-    r.readAsDataURL(file);
+    setProgress(40);
+
+    getVideoThumbnail(file,(thumb)=>{
+      const r=new FileReader();
+      r.onload=e=>{
+        savePost({
+          video:e.target.result,
+          videoThumb:thumb,
+          text
+        });
+      };
+      r.readAsDataURL(file);
+    });
     return;
   }
 
-  // ===== TEXT ONLY =====
-  await savePost();
+  // ===== TEXT =====
+  await savePost({text});
 }
+  
 		// ===== Render Post =====  
-function renderPost(d, id){  
+    function renderPost(d, id){  
 
   // ===== COUNT EMOJIS =====
   let likes = "";
@@ -372,12 +381,12 @@ function renderPost(d, id){
   // ===== AVATAR =====
   let avatarHTML = d.userAvatar 
     ? `<img src="${d.userAvatar}" class="avatar">` 
-    : `<div class="avatar-placeholder">${d.user[0].toUpperCase()}</div>`;  
+    : `<div class="avatar-placeholder">${d.user?.[0]?.toUpperCase()||"U"}</div>`;  
 
-  // ===== DELETE BTN =====
+  // ===== DELETE BUTTON =====
   let deleteBtn = d.user === user 
     ? `<button onclick="deletePost('${id}')">Supprimer</button>` 
-    : '';  
+    : '';
 
   // ===== MEDIA =====
   let mediaHTML = "";
@@ -387,33 +396,34 @@ function renderPost(d, id){
     mediaHTML += `<img src="${d.img}" class="post-img">`;
   }
 
-  // VIDEO
+  // VIDEO + THUMBNAIL
   if(d.video){
     mediaHTML += `
-      <video class="post-video" controls preload="metadata">
+      <video class="post-video" controls preload="metadata"
+        ${d.videoThumb ? `poster="${d.videoThumb}"` : ""}>
         <source src="${d.video}">
         Your browser does not support video.
       </video>`;
   }
 
-  // LINK (CLICKABLE)
+  // LINK (NAME ONLY – NO DUPLICATE)
   if(d.link){
     mediaHTML += `
       <a href="${d.link}" target="_blank" class="post-link">
-        ${d.linkTitle ? `<strong>${d.linkTitle}</strong><br>` : ""}
-        ${d.link}
+        🌐 ${d.site || d.link}
       </a>`;
   }
 
-  // ===== FINAL HTML =====
+  // ===== FINAL RENDER =====
   return `
   <div class="post">
+
     <div class="post-header">
       ${avatarHTML}
       <b>${d.user}</b>
     </div>
 
-    ${d.text ? `<p>${d.text}</p>` : ""}
+    ${(!d.link && d.text) ? `<p class="post-text">${d.text}</p>` : ""}
 
     ${mediaHTML}
 
@@ -423,7 +433,7 @@ function renderPost(d, id){
       ${new Date(d.time).toLocaleString()}
     </div>
 
-    <!-- LIKE FACEBOOK STYLE -->
+    <!-- LIKE / REACTIONS -->
     <div class="reaction-box">
       <span class="main-like"
         ontouchstart="showReactions(this)"
@@ -446,11 +456,13 @@ function renderPost(d, id){
       <span>${likes}</span>
     </div>
 
+    <!-- COMMENTS -->
     <div class="comments">
       ${commentsHtml}
       <input placeholder="Commentaire">
       <button onclick="addComment('${id}',this)">OK</button>
     </div>
+
   </div>`;
 }
 
