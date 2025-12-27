@@ -58,7 +58,7 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
 .hidden { display: none; }
 
 
-}
+
 </style>  
 </head>  
 <body> 
@@ -231,7 +231,7 @@ feedLoader.classList.remove("hidden");
 profileLoader.classList.remove("hidden");
 
 function savePostFinal(img) {
-db.ref(users/${user}).get()
+db.ref(`users/${user}`).get()
 .then(snapshot => {
 const avatar = snapshot.val()?.avatar || "";
 db.ref("posts/" + id).set({
@@ -301,7 +301,7 @@ Object.values(d.likes).forEach(e=>{
 count[e] = (count[e] || 0) + 1;
 });
 for(const e in count){
-likes += ${e} ${count[e]} ;
+likes += `${e} ${count[e]} `;
 }
 }
 
@@ -309,16 +309,16 @@ likes += ${e} ${count[e]} ;
 let commentsHtml = "";
 if(d.comments){
 for(const c in d.comments){
-commentsHtml += <div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>;
-}
+commentsHtml += `<div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>`;
+		}
 }
 
 let avatarHTML = d.userAvatar
-? <img src="${d.userAvatar}" class="avatar">
-: <div class="avatar-placeholder">${d.user[0].toUpperCase()}</div>;
-
+? `<img src="${d.userAvatar}" class="avatar">`
+: `<div class="avatar-placeholder">${d.user[0].toUpperCase()}</div>`;
+	
 let deleteBtn = d.user===user
-? <button onclick="deletePost('${id}')">Supprimer</button>
+? `<button class="delete-btn" onclick="deletePost('${id}')">Supprimer</button>`
 : '';
 
 return `
