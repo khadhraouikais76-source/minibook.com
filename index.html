@@ -57,36 +57,7 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
 
 .hidden { display: none; }
 
-#postProgress{
-  display:none;
-  width:100%;
-  height:6px;
-  background:#ddd;
-  position:relative;
-}
-#postProgressBar{
-  height:100%;
-  width:0%;
-  background:#4caf50;
-}
-#postProgressPercent{
-  position:absolute;
-  right:5px;
-  top:-18px;
-  font-size:12px;
-}
 
-.post-video,.post-img{
-  width:100%;
-  border-radius:8px;
-}
-
-.post-link{
-  display:block;
-  margin-top:6px;
-  color:#1877f2;
-  font-weight:bold;
-  text-decoration:none;
 }
 </style>  
 </head>  
@@ -124,9 +95,7 @@ textarea{resize:none;border-radius:12px;border:1px solid #ccc;padding:10px;font-
     <textarea id="postText" placeholder="À quoi pensez-vous ?"></textarea>  
     <input type="file" id="postImage" accept="image/*">  
     <button class="primary" onclick="handlePost(postText.value, postImage.files[0], postText, postImage)">Publier</button>  
-	  <div id="postProgress">
-  <div id="postProgressBar"></div>
-</div>
+	  
     <div id="allPosts" style="min-height:50px; overflow-y:auto; max-height:500px;"></div>  
     <div id="feedLoader" class="loader hidden"></div>  
   </div>    <div id="profile" class="box hidden">  
@@ -253,218 +222,143 @@ function logout(){ localStorage.removeItem("user"); location.reload(); }
   
 // ===== Post Handling =====  
 	
-  async function handlePost(text, file, textArea, fileInput){
+  === Post Handling =====
 
-  if(!text && !file) return;
+function handlePost(text, file, textArea, fileInput) {
+if (!text && !file) return; // لا يوجد نص ولا صورة → لا نفعل شيء
 
-  const progressBox = document.getElementById("postProgress");
-  const bar = document.getElementById("postProgressBar");
-  const percent = document.getElementById("postProgressPercent");
+const id = Date.now(); // معرف مؤقت للمنشور
+feedLoader.classList.remove("hidden");
+profileLoader.classList.remove("hidden");
 
-  function setProgress(p){
-    progressBox.style.display="block";
-    bar.style.width = p+"%";
-    percent.textContent = p+"%";
-  }
-
-  function endProgress(){
-    setProgress(100);
-    setTimeout(()=>{
-      progressBox.style.display="none";
-      bar.style.width="0%";
-      percent.textContent="";
-    },500);
-  }
-
-  setProgress(10);
-
-  const id = Date.now();
-
-  let postData = {
-    user,
-    time: Date.now(),
-    likes:{},
-    comments:{}
-  };
-
-  // ===== SAVE =====
-  async function savePost(extra){
-    setProgress(80);
-    const snap = await db.ref("users/"+user).get();
-    postData.userAvatar = snap.val()?.avatar || "";
-    Object.assign(postData, extra);
-    await db.ref("posts/"+id).set(postData);
-    textArea.value="";
-    if(fileInput) fileInput.value="";
-    endProgress();
-  }
-
-  // ===== LINK =====
-  if(text && /^https?:\/\//i.test(text)){
-    setProgress(40);
-    await savePost({
-      link: text,
-      site: getSiteName(text)
-    });
-    return;
-  }
-
-  // ===== IMAGE =====
-  if(file && file.type.startsWith("image/")){
-    setProgress(40);
-    new Compressor(file,{
-      quality:0.05,
-      success(res){
-        const r=new FileReader();
-        r.onload=e=>savePost({img:e.target.result,text});
-        r.readAsDataURL(res);
-      }
-    });
-    return;
-  }
-
-  // ===== VIDEO =====
-  if(file && file.type.startsWith("video/")){
-    const MAX = 5*1024*1024;
-    if(file.size>MAX){
-      alert("Error: Video size must not exceed 5 MB.");
-      endProgress();
-      return;
-    }
-
-    setProgress(40);
-
-    getVideoThumbnail(file,(thumb)=>{
-      const r=new FileReader();
-      r.onload=e=>{
-        savePost({
-          video:e.target.result,
-          videoThumb:thumb,
-          text
-        });
-      };
-      r.readAsDataURL(file);
-    });
-    return;
-  }
-
-  // ===== TEXT =====
-  await savePost({text});
+function savePostFinal(img) {
+db.ref(users/${user}).get()
+.then(snapshot => {
+const avatar = snapshot.val()?.avatar || "";
+db.ref("posts/" + id).set({
+user,
+userAvatar: avatar,
+text,
+img,
+time: Date.now(),
+likes: {},
+comments: {}
+}).finally(() => {
+textArea.value = "";
+if (fileInput) fileInput.value = "";
+feedLoader.classList.add("hidden");
+profileLoader.classList.add("hidden");
+});
+})
+.catch(err => {
+console.error("Erreur lors de la récupération des données utilisateur:", err);
+feedLoader.classList.add("hidden");
+profileLoader.classList.add("hidden");
+});
 }
-  
-		// ===== Render Post =====  
-    function renderPost(d, id){  
 
-  // ===== COUNT EMOJIS =====
-  let likes = "";
-  if(d.likes){
-    const count = {};
-    Object.values(d.likes).forEach(e=>{
-      count[e] = (count[e] || 0) + 1;
-    });
-    for(const e in count){
-      likes += `${e} ${count[e]} `;
-    }
-  }
+if (file) {
+// التحقق أن الملف صورة فقط عند الضغط على النشر
+if (!file.type.startsWith("image/")) {
+alert("Erreur : le fichier doit être une image !...يجب ان تكون صورة فقط...the file most bee photo"); // رسالة بالفرنسية
+if (fileInput) fileInput.value = ""; // إزالة الملف غير المقبول
+feedLoader.classList.add("hidden");
+profileLoader.classList.add("hidden");
+return; // الخروج من الدالة، لن يتم تحميل الملف
+}
 
-  // ===== COMMENTS =====
-  let commentsHtml = "";  
-  if(d.comments){ 
-    for(const c in d.comments){ 
-      commentsHtml += `
-        <div class="small">
-          <b>${d.comments[c].user}:</b> ${d.comments[c].text}
-        </div>`; 
-    } 
+new Compressor(file, {  
+  quality: 0.07,  
+  maxWidth: 1024,  
+  maxHeight: 1024,  
+  success(result) {  
+    const reader = new FileReader();  
+    reader.onload = function(e) {  
+      savePostFinal(e.target.result); // حفظ الصورة بعد تحويلها لـ Base64  
+    };  
+    reader.readAsDataURL(result);  
+  },  
+  error(err) {  
+    console.error("Erreur lors de la compression de l'image:", err);  
+    alert("Erreur lors du traitement de l'image.");  
+    feedLoader.classList.add("hidden");  
+    profileLoader.classList.add("hidden");  
   }  
+});
 
-  // ===== AVATAR =====
-  let avatarHTML = d.userAvatar 
-    ? `<img src="${d.userAvatar}" class="avatar">` 
-    : `<div class="avatar-placeholder">${d.user?.[0]?.toUpperCase()||"U"}</div>`;  
-
-  // ===== DELETE BUTTON =====
-  let deleteBtn = d.user === user 
-    ? `<button onclick="deletePost('${id}')">Supprimer</button>` 
-    : '';
-
-  // ===== MEDIA =====
-  let mediaHTML = "";
-
-  // IMAGE
-  if(d.img){
-    mediaHTML += `<img src="${d.img}" class="post-img">`;
-  }
-
-  // VIDEO + THUMBNAIL
-  if(d.video){
-    mediaHTML += `
-      <video class="post-video" controls preload="metadata"
-        ${d.videoThumb ? `poster="${d.videoThumb}"` : ""}>
-        <source src="${d.video}">
-        Your browser does not support video.
-      </video>`;
-  }
-
-  // LINK (NAME ONLY – NO DUPLICATE)
-  if(d.link){
-    mediaHTML += `
-      <a href="${d.link}" target="_blank" class="post-link">
-        🌐 ${d.site || d.link}
-      </a>`;
-  }
-
-  // ===== FINAL RENDER =====
-  return `
-  <div class="post">
-
-    <div class="post-header">
-      ${avatarHTML}
-      <b>${d.user}</b>
-    </div>
-
-    ${(!d.link && d.text) ? `<p class="post-text">${d.text}</p>` : ""}
-
-    ${mediaHTML}
-
-    ${deleteBtn}
-
-    <div class="post-time">
-      ${new Date(d.time).toLocaleString()}
-    </div>
-
-    <!-- LIKE / REACTIONS -->
-    <div class="reaction-box">
-      <span class="main-like"
-        ontouchstart="showReactions(this)"
-        onmouseenter="showReactions(this)">👍</span>
-
-      <div class="reactions">
-        <span onclick="pickReaction('${id}','👍')">👍</span>
-        <span onclick="pickReaction('${id}','❤️')">❤️</span>
-        <span onclick="pickReaction('${id}','🥰')">🥰</span>
-        <span onclick="pickReaction('${id}','😭')">😭</span>
-        <span onclick="pickReaction('${id}','🤮')">🤮</span>
-        <span onclick="pickReaction('${id}','🔥')">🔥</span>
-        <span onclick="pickReaction('${id}','🌹')">🌹</span>
-        <span onclick="pickReaction('${id}','😂')">😂</span>
-        <span onclick="pickReaction('${id}','😮')">😮</span>
-        <span onclick="pickReaction('${id}','😢')">😢</span>
-        <span onclick="pickReaction('${id}','😡')">😡</span>
-      </div>
-
-      <span>${likes}</span>
-    </div>
-
-    <!-- COMMENTS -->
-    <div class="comments">
-      ${commentsHtml}
-      <input placeholder="Commentaire">
-      <button onclick="addComment('${id}',this)">OK</button>
-    </div>
-
-  </div>`;
+} else {
+savePostFinal(""); // إذا لا يوجد ملف، حفظ النص فقط
 }
+}
+		// ===== Render Post =====  
+    function renderPost(d,id){
+
+// COUNT EMOJIS
+let likes = "";
+if(d.likes){
+const count = {};
+Object.values(d.likes).forEach(e=>{
+count[e] = (count[e] || 0) + 1;
+});
+for(const e in count){
+likes += ${e} ${count[e]} ;
+}
+}
+
+// COMMENTS
+let commentsHtml = "";
+if(d.comments){
+for(const c in d.comments){
+commentsHtml += <div class="small"><b>${d.comments[c].user}:</b> ${d.comments[c].text}</div>;
+}
+}
+
+let avatarHTML = d.userAvatar
+? <img src="${d.userAvatar}" class="avatar">
+: <div class="avatar-placeholder">${d.user[0].toUpperCase()}</div>;
+
+let deleteBtn = d.user===user
+? <button onclick="deletePost('${id}')">Supprimer</button>
+: '';
+
+return `
+
+  <div class="post">  
+    <div>${avatarHTML} <b>${d.user}</b></div>  
+    <p>${d.text||""}</p>  
+    ${d.img?`<img src="${d.img}">`:''}  
+    ${deleteBtn}  
+    <div>${new Date(d.time).toLocaleString()}</div>  <!-- LIKE FACEBOOK STYLE -->  
+<div class="reaction-box">  
+  <span class="main-like"  
+    ontouchstart="showReactions(this)"  
+    onmouseenter="showReactions(this)">👍</span>  
+
+  <div class="reactions">  
+    <span onclick="pickReaction('${id}','👍')">👍</span>  
+    <span onclick="pickReaction('${id}','❤️')">❤️</span>  
+	<span onclick="pickReaction('${id}','🥰')">🥰</span>  
+	<span onclick="pickReaction('${id}','😭')">😭</span>  
+	<span onclick="pickReaction('${id}','🤮')">🤮</span>  
+	<span onclick="pickReaction('${id}','🔥')">🔥</span>  
+	<span onclick="pickReaction('${id}','🌹')">🌹</span>  
+    <span onclick="pickReaction('${id}','😂')">😂</span>  
+    <span onclick="pickReaction('${id}','😮')">😮</span>  
+    <span onclick="pickReaction('${id}','😢')">😢</span>  
+    <span onclick="pickReaction('${id}','😡')">😡</span>  
+  </div>  
+
+  <span>${likes}</span>  
+</div>  
+
+<div>  
+  ${commentsHtml}  
+  <input placeholder="Commentaire">  
+  <button onclick="addComment('${id}',this)">OK</button>  
+</div>
+
+  </div>`;  
+}  
 
 // ===== LOAD FEED =====  
 function loadFeed(){  
