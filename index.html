@@ -7,7 +7,19 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">  
 <style>
-
+/* إصلاح صورة صاحب البوست */
+.avatar,
+.post .avatar img{
+  width:48px !important;
+  height:48px !important;
+  min-width:48px;
+  min-height:48px;
+  max-width:48px;
+  max-height:48px;
+  border-radius:50%;
+  object-fit:cover;
+  flex-shrink:0;
+}
 /* ===== VARIABLES ===== */
 :root{
   --bg:#F4F6FB;
@@ -39,6 +51,9 @@ body{
   background:var(--bg);
   color:var(--text);
   transition:.3s;
+	
+  margin-top:50px !important;
+
 }
 
 /* ===== AUTH ===== */
