@@ -7,7 +7,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">  
 <style>
-/* إصلاح صورة صاحب البوست */
+/* مساحة إجبارية للإشهار العلوي */
+.ad-safe-top{
+  height:80px;   /* عدّلها إذا الإشهار أكبر */
+  width:100%;
+}
+	/* إصلاح صورة صاحب البوست */
 .avatar,
 .post .avatar img{
   width:48px !important;
@@ -346,11 +351,16 @@ button{
   .post img{max-height:220px}
   .navbar button{flex:1 1 100%}
   .chat-msg{font-size:13px}
+	  .ad-safe-top{ height:90px; }
 }
 
+@media(min-width:481px){
+  .ad-safe-top{ height:70px; }
+}
 </style>
 </head>  
 <body> 
+	<div class="ad-safe-top"></div>
   <script type="text/javascript">
   atOptions = {
   	'key' : '90e745df8b4e0b6a32d37aef2b9a5129',
