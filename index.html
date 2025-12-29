@@ -7,10 +7,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>  
 <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">  
 <style>
-/* مساحة إجبارية للإشهار العلوي */
 .ad-safe-top{
-  height:100px;   /* عدّلها إذا الإشهار أكبر */
   width:100%;
+  min-height:80px;   /* ارتفاع آمن */
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#f5f6fa; /* اختياري */
+  overflow:hidden;
 }
 	/* إصلاح صورة صاحب البوست */
 .avatar,
@@ -360,7 +364,9 @@ button{
 </style>
 </head>  
 <body> 
-	<script>
+	
+	
+	<div class="ad-safe-top"><script>
   atOptions = {
     'key' : '90e745df8b4e0b6a32d37aef2b9a5129',
     'format' : 'iframe',
@@ -370,9 +376,7 @@ button{
   };
 </script>
 <script src="https://www.highperformanceformat.com/90e745df8b4e0b6a32d37aef2b9a5129/invoke.js"></script>
-	
-	
-	<div class="ad-safe-top"></div>
+	</div>
   
 
   <!-- ===== AUTH ===== -->  
