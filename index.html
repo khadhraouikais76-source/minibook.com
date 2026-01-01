@@ -198,14 +198,14 @@ body{
 /* ===== CARDS ===== */
 :root{
   --card: linear-gradient(135deg,
-    #ffffffee,
-    #f1f5ff,
-    #e0e7ff
+    #eef2ff,
+    #e0e7ff,
+    #c7d2fe,
+    #ddd6fe
   );
   --card-text:#1e1b4b;
 }
-
-.box{
+	.box{
   background:var(--card);
   padding:20px;
   border-radius:18px;
@@ -214,15 +214,16 @@ body{
   color:var(--card-text);
 
   box-shadow:
-    0 10px 25px rgba(99,102,241,.18),
-    inset 0 1px 0 rgba(255,255,255,.6);
+    0 12px 30px rgba(99,102,241,.25),
+    inset 0 1px 0 rgba(255,255,255,.7);
 
-  transition:.3s ease;
+  transition:all .3s ease;
 }
+
 .box:hover{
   transform:translateY(-3px);
   box-shadow:
-    0 15px 35px rgba(99,102,241,.28);
+    0 18px 40px rgba(99,102,241,.35);
 }
 /* ===== POSTS ===== */
 .post{
