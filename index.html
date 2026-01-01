@@ -54,15 +54,23 @@ body.dark{
 .hidden{display:none !important}
 
 /* ===== BODY ===== */
+:root{
+  --bg: linear-gradient(135deg,
+    #667eea,
+    #764ba2,
+    #f7971e,
+    #ffd200
+  );
+  --text:#ffffff;
+}
+
 body{
   margin:0;
   font-family:'Segoe UI',Tahoma,Verdana,sans-serif;
   background:var(--bg);
   color:var(--text);
-  transition:.3s;
-	
-  
-
+  min-height:100vh;
+  transition:background .5s ease,color .3s ease;
 }
 
 /* ===== AUTH ===== */
@@ -81,8 +89,16 @@ body{
   width:90%;
   padding:30px;
   border-radius:18px;
-  background:#fff;
-  box-shadow:0 15px 35px rgba(0,0,0,.25);
+
+  background: linear-gradient(135deg,
+    #667eea,
+    #764ba2,
+    #ff758c
+  );
+
+  box-shadow:0 20px 40px rgba(0,0,0,.3);
+  color:#fff;
+  backdrop-filter: blur(6px);
 }
 
 #auth h3{
