@@ -196,14 +196,34 @@ body{
 }
 
 /* ===== CARDS ===== */
+:root{
+  --card: linear-gradient(135deg,
+    #ffffffee,
+    #f1f5ff,
+    #e0e7ff
+  );
+  --card-text:#1e1b4b;
+}
+
 .box{
   background:var(--card);
   padding:20px;
   border-radius:18px;
   margin-bottom:20px;
-  box-shadow:0 8px 20px rgba(0,0,0,.07);
-}
 
+  color:var(--card-text);
+
+  box-shadow:
+    0 10px 25px rgba(99,102,241,.18),
+    inset 0 1px 0 rgba(255,255,255,.6);
+
+  transition:.3s ease;
+}
+.box:hover{
+  transform:translateY(-3px);
+  box-shadow:
+    0 15px 35px rgba(99,102,241,.28);
+}
 /* ===== POSTS ===== */
 .post{
   border-bottom:1px solid rgba(0,0,0,.08);
