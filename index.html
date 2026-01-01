@@ -132,34 +132,58 @@ body{
 }
 
 /* ===== NAVBAR ===== */
+:root{
+  --primary:#6366f1;
+  --secondary:#8b5cf6;
+}
+
 .navbar{
   display:flex;
   gap:10px;
-  padding:10px;
-  background:var(--card);
+  padding:12px;
+
+  background: linear-gradient(135deg,
+    #667eea,
+    #764ba2
+  );
+
   position:sticky;
   top:0;
-  z-index:5; /* أقل من الإعلانات */
-  box-shadow:0 2px 8px rgba(0,0,0,.08);
-  border-radius:0 0 14px 14px;
+  z-index:5;
+  box-shadow:0 8px 25px rgba(0,0,0,.18);
+  border-radius:0 0 16px 16px;
   flex-wrap:wrap;
 }
 
 .navbar button{
   flex:1 1 auto;
-  padding:9px 14px;
-  background:#EEF2FF;
-  color:#3730A3;
+  padding:10px 14px;
+
+  background: linear-gradient(135deg,
+    #eef2ff,
+    #e0e7ff
+  );
+
+  color:#3730a3;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
   font-weight:600;
   cursor:pointer;
-  transition:.25s;
+  transition:all .25s ease;
 }
 
 .navbar button:hover{
-  background:var(--primary);
+  background: linear-gradient(135deg,
+    #6366f1,
+    #8b5cf6
+  );
   color:#fff;
+  transform:translateY(-1px);
+  box-shadow:0 6px 15px rgba(99,102,241,.45);
+}
+
+.navbar button:active{
+  transform:scale(.97);
 }
 
 /* ===== CONTAINER ===== */
