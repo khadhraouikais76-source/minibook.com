@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>Firebase Old Posts Cleaner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,#1a202c,#2d3748);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+}
+.box{
+  background:#111827;
+  padding:30px;
+  border-radius:16px;
+  max-width:420px;
+  width:90%;
+  box-shadow:0 20px 40px rgba(0,0,0,0.5);
+  text-align:center;
+}
+h2{margin-bottom:10px;}
+p{font-size:14px;opacity:.9;}
+button{
+  margin-top:20px;
+  width:100%;
+  padding:14px;
+  font-size:16px;
+  font-weight:bold;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  background:#ef4444;
+  color:#fff;
+}
+button:hover{background:#dc2626;}
+#status{
+  margin-top:15px;
+  font-size:14px;
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+  <h2>🧹 حذف البوستات القديمة</h2>
+  <p>
+    هذا الزر يحذف <b>النصف الأقدم فقط</b><br>
+    من البوستات مع الصور والتعليقات والإيموجيات
+  </p>
+  <button onclick="deleteOldHalfPosts()">
+    حذف النصف القديم الآن
+  </button>
+  <div id="status"></div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// 🔧 عدّل بيانات Firebase فقط إذا لزم
+firebase.initializeApp({
+  apiKey: "AIzaSyAiZsXpUfRB2s__oWRLjjT3yEgZQXOXIuI",
+  databaseURL: "https://book-ee927-default-rtdb.firebaseio.com"
+});
+
+const db = firebase.database();
+const statusBox = document.getElementById("status");
+
+// 🚨 حذف النصف الأقدم فقط
+function deleteOldHalfPosts(){
+
+  if(!confirm("⚠️ هل أنت متأكد من حذف النصف الأقدم من البوستات؟")) return;
+
+  statusBox.innerHTML = "⏳ جاري جلب البوستات...";
+
+  db.ref("posts").get().then(snapshot=>{
+    if(!snapshot.exists()){
+      statusBox.innerHTML = "❌ لا توجد بوستات";
+      return;
+    }
+
+    const posts = [];
+
+    snapshot.forEach(p=>{
+      posts.push({
+        id: p.key,
+        time: p.val().time || 0
+      });
+    });
+
+    posts.sort((a,b)=>a.time - b.time);
+
+    const half = Math.floor(posts.length / 2);
+    const oldPosts = posts.slice(0, half);
+
+    if(oldPosts.length === 0){
+      statusBox.innerHTML = "ℹ️ لا يوجد ما يُحذف";
+      return;
+    }
+
+    const updates = {};
+    oldPosts.forEach(p=>{
+      updates["posts/" + p.id] = null;
+    });
+
+    statusBox.innerHTML = "🧹 جاري حذف " + oldPosts.length + " بوست...";
+
+    db.ref().update(updates).then(()=>{
+      statusBox.innerHTML = "✅ تم حذف " + oldPosts.length + " بوست قديم بنجاح";
+    }).catch(err=>{
+      console.error(err);
+      statusBox.innerHTML = "❌ خطأ أثناء الحذف";
+    });
+
+  }).catch(err=>{
+    console.error(err);
+    statusBox.innerHTML = "❌ فشل الاتصال بقاعدة البيانات";
+  });
+}
+</script>
+
+</body>
+</html>
